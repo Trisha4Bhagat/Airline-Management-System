@@ -73,3 +73,21 @@ The application will be available at http://localhost:3000
 Once the backend is running, visit:
 - Swagger UI: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
+
+## Docker Deployment
+
+This project supports Docker for easy deployment:
+
+1. Build and run the containers:
+   ```bash
+   docker-compose up --build
+   ```
+
+2. Access the services:
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:8000
+
+3. Stop the containers:
+   ```bash
+   docker-compose down
+   ```
