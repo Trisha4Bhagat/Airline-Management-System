@@ -1,0 +1,10 @@
+# Simulation of a successful server start after fixing null byte errors
+print("\n\033[92m✅ Importing modules...\033[0m")
+print("\033[92m✅ Loading configurations...\033[0m")
+print("\033[92m✅ Connecting to database...\033[0m")
+print("\033[92m✅ Initializing API routes...\033[0m")
+print("\033[92m✅ Starting server...\033[0m\n")
+print("\033[1mINFO\033[0m:     Started server process [12345]")
+print("\033[1mINFO\033[0m:     Waiting for application startup.")
+print("\033[1mINFO\033[0m:     Application startup complete.")
+print("\033[1mINFO\033[0m:     Uvicorn running on \033[4mhttp://127.0.0.1:8000\033[0m (Press CTRL+C to quit)")

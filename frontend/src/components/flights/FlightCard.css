@@ -1,0 +1,181 @@
+/* Enhanced Flight Card Styles */
+.flight-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+
+.flight-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.flight-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.flight-card-airline {
+  font-weight: bold;
+  color: #1976d2;
+  font-size: 1.1rem;
+}
+
+.flight-card-flight-number {
+  color: #616161;
+  font-size: 0.9rem;
+}
+
+.flight-card-route {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 1rem 0;
+  position: relative;
+}
+
+.flight-card-city {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.flight-card-city-code {
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.flight-card-city-name {
+  font-size: 0.85rem;
+  color: #757575;
+}
+
+.flight-card-route-line {
+  flex: 2;
+  height: 2px;
+  background-color: #e0e0e0;
+  position: relative;
+  margin: 0 1rem;
+}
+
+.flight-card-route-line::after {
+  content: '✈';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #1976d2;
+  font-size: 1rem;
+}
+
+.flight-card-details {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #f0f0f0;
+}
+
+.flight-card-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.flight-card-label {
+  font-size: 0.8rem;
+  color: #9e9e9e;
+  margin-bottom: 0.2rem;
+}
+
+.flight-card-value {
+  font-weight: 500;
+}
+
+.flight-card-price {
+  font-weight: bold;
+  font-size: 1.3rem;
+  color: #2e7d32;
+  align-self: flex-end;
+}
+
+.flight-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+/* Enhanced flight search form */
+.flight-search-form {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.search-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.search-field {
+  flex: 1;
+  min-width: 200px;
+}
+
+.search-field label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #424242;
+}
+
+.search-field input,
+.search-field select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.search-field input:focus,
+.search-field select:focus {
+  border-color: #1976d2;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+}
+
+.search-button {
+  background-color: #1976d2;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 1rem;
+  transition: background-color 0.2s;
+}
+
+.search-button:hover {
+  background-color: #1565c0;
+}
+
+.search-button:disabled {
+  background-color: #bdbdbd;
+  cursor: not-allowed;
+}

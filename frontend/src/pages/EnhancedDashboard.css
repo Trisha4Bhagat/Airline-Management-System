@@ -1,0 +1,758 @@
+/* Colorful modern dashboard theme */
+:root {
+  --primary-color: #008cff;
+  --primary-dark: #0070cc;
+  --primary-light: #e7f4ff;
+  --secondary-color: #ff5722;
+  --accent-color: #ffd600;
+  --success-color: #00c853;
+  --warning-color: #ffa000;
+  --danger-color: #f44336;
+  --info-color: #00b0ff;
+  --dark-blue: #283593;
+  --purple: #673ab7;
+  --teal: #009688;
+  --pink: #e91e63;
+  --deep-purple: #5e35b1;
+  --indigo: #3949ab;
+  
+  --gray-100: #f8f9fa;
+  --gray-200: #e9ecef;
+  --gray-300: #dee2e6;
+  --gray-400: #ced4da;
+  --gray-500: #adb5bd;
+  --gray-600: #6c757d;
+  --gray-700: #495057;
+  --gray-800: #343a40;
+  --gray-900: #212529;
+  
+  --gradient-blue: linear-gradient(135deg, var(--primary-color) 0%, var(--indigo) 100%);
+  --gradient-orange: linear-gradient(135deg, var(--secondary-color) 0%, #ff9800 100%);
+  --gradient-green: linear-gradient(135deg, var(--teal) 0%, var(--success-color) 100%);
+  --gradient-purple: linear-gradient(135deg, var(--purple) 0%, var(--deep-purple) 100%);
+  
+  --border-radius: 8px;
+  --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  --hover-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Main container styles */
+.dashboard-container {
+  padding: 1.5rem;
+  background-color: #f5f8ff;
+}
+
+/* Header styles */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--card-shadow);
+}
+
+.welcome-section h1 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin-bottom: 0.3rem;
+}
+
+.date {
+  color: var(--gray-600);
+  font-size: 0.9rem;
+}
+
+.dashboard-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.action-button {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1.25rem;
+  border-radius: 30px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  gap: 8px;
+}
+
+.action-button.primary {
+  background: var(--gradient-blue);
+  color: white;
+}
+
+.action-button.secondary {
+  background: white;
+  color: var(--primary-color);
+  border: 2px solid var(--primary-color);
+}
+
+.action-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Grid layout for dashboard cards */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Card styles */
+.dashboard-card {
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--card-shadow);
+  padding: 1.5rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--hover-shadow);
+}
+
+.dashboard-card h2 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--gray-800);
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dashboard-card h2 .card-icon {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  color: white;
+}
+
+/* Stats card styles */
+.stats-card h2 .card-icon {
+  background: var(--gradient-blue);
+}
+
+.stats-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  background-color: var(--primary-light);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+}
+
+.stat-item:nth-child(1)::before {
+  background: var(--primary-color);
+}
+
+.stat-item:nth-child(2)::before {
+  background: var(--success-color);
+}
+
+.stat-item:nth-child(3)::before {
+  background: var(--warning-color);
+}
+
+.stat-item:nth-child(4)::before {
+  background: var(--danger-color);
+}
+
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+.stat-label {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--gray-600);
+}
+
+.flight-status-chart {
+  height: 180px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.chart-placeholder {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  width: 100%;
+  height: 100%;
+}
+
+.bar {
+  width: 50px;
+  border-radius: 4px 4px 0 0;
+  transition: height 1s ease;
+}
+
+.bar.on-time {
+  background: linear-gradient(to top, var(--success-color), #4caf50);
+}
+
+.bar.delayed {
+  background: linear-gradient(to top, var(--warning-color), #ffb74d);
+}
+
+.bar.cancelled {
+  background: linear-gradient(to top, var(--danger-color), #ef5350);
+}
+
+.chart-labels {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.chart-labels span {
+  font-size: 0.8rem;
+  color: var(--gray-600);
+}
+
+/* Destinations card styles */
+.destinations-card h2 .card-icon {
+  background: var(--gradient-purple);
+}
+
+.destinations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.destination-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background-color: var(--gray-100);
+  border-radius: var(--border-radius);
+  transition: background-color 0.2s ease;
+}
+
+.destination-item:hover {
+  background-color: var(--primary-light);
+}
+
+.destination-name {
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+.destination-count {
+  font-size: 0.85rem;
+  color: var(--gray-600);
+  margin-top: 0.25rem;
+}
+
+.destination-growth {
+  font-weight: 600;
+}
+
+.growth-indicator {
+  display: inline-flex;
+  padding: 0.25rem 0.5rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+}
+
+.growth-indicator.positive {
+  background-color: rgba(0, 200, 83, 0.15);
+  color: var(--success-color);
+}
+
+.growth-indicator.negative {
+  background-color: rgba(244, 67, 54, 0.15);
+  color: var(--danger-color);
+}
+
+/* Bookings card styles */
+.bookings-card h2 .card-icon {
+  background: var(--gradient-orange);
+}
+
+.table-container {
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+
+.dashboard-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.dashboard-table th {
+  text-align: left;
+  padding: 0.75rem;
+  background-color: var(--gray-100);
+  color: var(--gray-700);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.dashboard-table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--gray-200);
+  color: var(--gray-800);
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-badge.confirmed {
+  background-color: rgba(0, 200, 83, 0.15);
+  color: var(--success-color);
+}
+
+.status-badge.processing {
+  background-color: rgba(255, 152, 0, 0.15);
+  color: var(--warning-color);
+}
+
+.status-badge.cancelled {
+  background-color: rgba(244, 67, 54, 0.15);
+  color: var(--danger-color);
+}
+
+/* Flights card styles */
+.flights-card h2 .card-icon {
+  background: var(--gradient-blue);
+}
+
+.upcoming-flights {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.flight-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: var(--gray-100);
+  border-radius: var(--border-radius);
+  transition: all 0.2s ease;
+}
+
+.flight-item:hover {
+  background-color: var(--primary-light);
+  transform: translateY(-2px);
+}
+
+.flight-number {
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: 0.25rem;
+}
+
+.flight-route {
+  font-size: 0.9rem;
+  color: var(--gray-700);
+}
+
+.departure-time {
+  text-align: right;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.flight-status {
+  text-align: right;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 20px;
+  display: inline-block;
+}
+
+.flight-status.on-time {
+  background-color: rgba(0, 200, 83, 0.15);
+  color: var(--success-color);
+}
+
+.flight-status.delayed {
+  background-color: rgba(255, 152, 0, 0.15);
+  color: var(--warning-color);
+}
+
+.flight-status.cancelled {
+  background-color: rgba(244, 67, 54, 0.15);
+  color: var(--danger-color);
+}
+
+/* Search card styles */
+.search-card h2 .card-icon {
+  background: var(--gradient-green);
+}
+
+.quick-search-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-size: 0.9rem;
+  color: var(--gray-700);
+  font-weight: 500;
+}
+
+.form-control {
+  padding: 0.75rem;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--border-radius);
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(0, 140, 255, 0.2);
+}
+
+.search-button {
+  background: var(--gradient-blue);
+  color: white;
+  border: none;
+  padding: 0.75rem;
+  border-radius: var(--border-radius);
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.search-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Special offers card */
+.special-offers-card h2 .card-icon {
+  background: var(--gradient-orange);
+}
+
+.offers-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.offer-item {
+  position: relative;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  padding: 1.25rem;
+  color: white;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-position: center;
+  background-size: cover;
+  box-shadow: inset 0 0 0 1000px rgba(0, 0, 0, 0.4);
+  transition: transform 0.3s ease;
+}
+
+.offer-item:hover {
+  transform: scale(1.02);
+}
+
+.offer-item:nth-child(1) {
+  background-image: url('https://source.unsplash.com/random/300x200/?paris');
+}
+
+.offer-item:nth-child(2) {
+  background-image: url('https://source.unsplash.com/random/300x200/?bali');
+}
+
+.offer-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.offer-description {
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  opacity: 0.9;
+}
+
+.offer-price {
+  font-weight: 700;
+  font-size: 1.3rem;
+}
+
+.offer-button {
+  background-color: var(--accent-color);
+  color: var(--gray-900);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  align-self: flex-start;
+}
+
+.offer-button:hover {
+  background-color: #ffc400;
+  transform: translateY(-2px);
+}
+
+/* Weather widget */
+.weather-card h2 .card-icon {
+  background: linear-gradient(135deg, #4fc3f7, #2196f3);
+}
+
+.weather-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.weather-current {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.weather-icon {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+  color: var(--primary-color);
+}
+
+.weather-temp {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+.weather-desc {
+  color: var(--gray-600);
+  margin-bottom: 1rem;
+}
+
+.weather-details {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  width: 100%;
+}
+
+.weather-detail {
+  background-color: var(--primary-light);
+  border-radius: var(--border-radius);
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.detail-label {
+  font-size: 0.8rem;
+  color: var(--gray-600);
+  margin-bottom: 0.25rem;
+}
+
+.detail-value {
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+/* Card footer link */
+.card-footer-link {
+  display: block;
+  text-align: center;
+  margin-top: 1rem;
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.5rem;
+  border-top: 1px solid var(--gray-200);
+  transition: color 0.2s ease;
+}
+
+.card-footer-link:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
+/* Help section */
+.help-section {
+  margin-top: 2rem;
+}
+
+.help-card {
+  background-color: var(--primary-light);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.help-icon {
+  width: 50px;
+  height: 50px;
+  background-color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--primary-color);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.help-content {
+  flex: 1;
+}
+
+.help-content h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--gray-900);
+}
+
+.help-content p {
+  color: var(--gray-700);
+  margin-bottom: 1rem;
+}
+
+.help-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.help-button {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.help-button.secondary {
+  background-color: white;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+}
+
+.help-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .dashboard-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stats-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .help-card {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .help-actions {
+    flex-direction: column;
+  }
+}
+
+/* Sidebar improvements for clash prevention */
+.dashboard-content {
+  width: 100%;
+  margin-left: 260px;
+  transition: margin-left 0.3s ease;
+}
+
+@media (max-width: 960px) {
+  .dashboard-content {
+    margin-left: 0;
+  }
+}
+
+/* Fix sidebar and content clash */
+.MuiBox-root .css-1f5i6qj {
+  margin-left: 240px;
+  width: calc(100% - 240px);
+}
+
+@media (max-width: 600px) {
+  .MuiBox-root .css-1f5i6qj {
+    margin-left: 0;
+    width: 100%;
+  }
+}

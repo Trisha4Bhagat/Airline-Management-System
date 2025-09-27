@@ -1,4 +1,4 @@
-﻿from pydantic import BaseModel
+from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
 
@@ -14,13 +14,17 @@ class FlightBase(BaseModel):
 class FlightCreate(FlightBase):
     pass
 
-class FlightUpdate(FlightBase):
-    pass
+class FlightUpdate(BaseModel):
+    flight_number: Optional[str] = None
+    departure_city: Optional[str] = None
+    arrival_city: Optional[str] = None
+    departure_time: Optional[datetime] = None
+    arrival_time: Optional[datetime] = None
+    price: Optional[float] = None
+    available_seats: Optional[int] = None
 
 class Flight(FlightBase):
     id: int
-    created_at: datetime
-    updated_at: datetime
 
     class Config:
         from_attributes = True

@@ -1,24 +1,24 @@
-﻿from pydantic import BaseModel
+from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
 
 class BookingBase(BaseModel):
+    user_id: int
     flight_id: int
+    booking_date: datetime
     seat_number: str
-    booking_status: str
 
 class BookingCreate(BookingBase):
-    user_id: int
+    pass
 
 class BookingUpdate(BaseModel):
-    booking_status: str
+    user_id: Optional[int] = None
+    flight_id: Optional[int] = None
+    booking_date: Optional[datetime] = None
+    seat_number: Optional[str] = None
 
 class Booking(BookingBase):
     id: int
-    user_id: int
-    booking_reference: str
-    created_at: datetime
-    updated_at: datetime
 
     class Config:
         from_attributes = True

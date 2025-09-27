@@ -4,7 +4,7 @@ from datetime import date
 from typing import List, Optional
 
 from ..models.flight import Flight
-from ..schemas.flight import FlightCreate
+from ..schemas.flight import FlightCreate, FlightUpdate
 
 class FlightService:
     def __init__(self, db: Session):
@@ -44,3 +44,21 @@ class FlightService:
         self.db.commit()
         self.db.refresh(db_flight)
         return db_flight
+        
+    def update_flight(self, flight_id: int, flight_data: FlightUpdate) -> Optional[Flight]:
+        db_flight = self.get_flight(flight_id)
+        if db_flight:
+            update_data = flight_data.dict(exclude_unset=True)
+            for key, value in update_data.items():
+                setattr(db_flight, key, value)
+            self.db.commit()
+            self.db.refresh(db_flight)
+        return db_flight
+    
+    def delete_flight(self, flight_id: int) -> bool:
+        db_flight = self.get_flight(flight_id)
+        if db_flight:
+            self.db.delete(db_flight)
+            self.db.commit()
+            return True
+        return False

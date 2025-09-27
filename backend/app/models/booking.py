@@ -1,4 +1,4 @@
-﻿from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from ..core.database import Base
@@ -17,4 +17,4 @@ class Booking(Base):
 
     # Relationships
     user = relationship("User", back_populates="bookings")
-    flight = relationship("Flight")
+    flight = relationship("Flight", back_populates="bookings")
