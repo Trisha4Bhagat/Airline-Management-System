@@ -156,3 +156,4 @@ Copilot helped analyze the entire project structure and provided a comprehensive
 2. Complete flight endpoints in backend (update/delete operations)
 3. Create admin flight management UI in frontend
 4. Connect frontend to backend API endpoints
+
