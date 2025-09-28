@@ -1,0 +1,56 @@
+.flight-form-container {
+  padding: 24px;
+  margin-top: 24px;
+  margin-bottom: 24px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.flight-form-container h2 {
+  color: #2c3e50;
+  margin-bottom: 24px;
+  font-weight: 600;
+  position: relative;
+}
+
+.flight-form-container h2:after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -8px;
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, #4a6fa5, #6fb1e4);
+}
+
+.flight-form-container .MuiTextField-root {
+  margin-bottom: 16px;
+}
+
+.flight-form-container .MuiButton-contained {
+  background: linear-gradient(135deg, #4a6fa5, #6fb1e4);
+  padding: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+}
+
+.flight-form-container .MuiButton-contained:hover {
+  background: linear-gradient(135deg, #3c5e8e, #5a9fcc);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.flight-form-container .MuiInputAdornment-root {
+  color: #4a6fa5;
+}
+
+.flight-form-container .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #4a6fa5;
+}
+
+.flight-form-container .MuiInputLabel-root.Mui-focused {
+  color: #4a6fa5;
+}

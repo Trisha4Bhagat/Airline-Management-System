@@ -1,0 +1,62 @@
+/* Admin Controls Styles */
+.admin-controls {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+}
+
+.admin-controls h3 {
+  margin: 0;
+  color: #333;
+  font-size: 1.2em;
+}
+
+.admin-controls .controls-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.admin-controls button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.admin-controls .primary-button {
+  background-color: #2196F3;
+  color: white;
+}
+
+.admin-controls .primary-button:hover {
+  background-color: #1976D2;
+}
+
+.admin-controls .secondary-button {
+  background-color: #757575;
+  color: white;
+}
+
+.admin-controls .secondary-button:hover {
+  background-color: #616161;
+}
+
+.admin-controls select {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+}
+
+.admin-controls input {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
