@@ -14,5 +14,5 @@ class Flight(Base):
     price = Column(Float, nullable=False)
     available_seats = Column(Integer, nullable=False)
     
-    # Relationships
-    bookings = relationship("Booking", back_populates="flight")
+    # Relationships - add cascade delete
+    bookings = relationship("Booking", back_populates="flight", cascade="all, delete-orphan")
