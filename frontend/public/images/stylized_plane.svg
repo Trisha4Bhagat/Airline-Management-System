@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800">
+  <defs>
+    <linearGradient id="airplane_grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3E92CC;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2A628F;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Airplane body -->
+  <path d="M600,400 L400,380 L430,350 L410,330 L200,350 L180,320 L140,330 L130,310 L100,320 L120,350 L80,370 L120,400 L80,430 L100,450 L130,460 L140,440 L180,450 L200,420 L410,440 L430,420 L400,390 L600,370 Z" fill="url(#airplane_grad)" />
+  
+  <!-- Wing -->
+  <path d="M350,380 L280,320 L260,330 L320,390 L350,380" fill="#2A628F" />
+  <path d="M350,390 L320,410 L260,450 L280,460 L350,390" fill="#2A628F" />
+  
+  <!-- Tail -->
+  <path d="M120,370 L80,340 L60,370 L80,400 L120,370" fill="#2A628F" />
+  <path d="M120,400 L80,430 L60,400 L80,370 L120,400" fill="#2A628F" />
+  
+  <!-- Windows -->
+  <circle cx="380" cy="385" r="5" fill="white" />
+  <circle cx="360" cy="385" r="5" fill="white" />
+  <circle cx="340" cy="385" r="5" fill="white" />
+  <circle cx="320" cy="385" r="5" fill="white" />
+  <circle cx="300" cy="385" r="5" fill="white" />
+  <circle cx="280" cy="385" r="5" fill="white" />
+  <circle cx="260" cy="385" r="5" fill="white" />
+  <circle cx="240" cy="385" r="5" fill="white" />
+  <circle cx="220" cy="385" r="5" fill="white" />
+</svg>

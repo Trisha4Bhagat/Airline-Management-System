@@ -8,12 +8,12 @@ interface SearchParams {
 }
 
 export const getAllFlights = async (): Promise<Flight[]> => {
-  const response = await api.get('/flights');
+  const response = await api.get('/api/flights/');
   return response.data;
 };
 
 export const getFlightById = async (id: number): Promise<Flight> => {
-  const response = await api.get(`/flights/${id}`);
+  const response = await api.get(`/api/flights/${id}`);
   return response.data;
 };
 
@@ -23,12 +23,11 @@ export const fetchFlightById = getFlightById;
 
 export const searchFlights = async (params: SearchParams): Promise<Flight[]> => {
   try {
-    const response = await api.get('/flights/search', { params });
+    const response = await api.get('/api/flights/', { params });
     return response.data;
   } catch (error) {
-    // For development, return sample flights if API fails
-    console.log('Error fetching flights, using sample data:', error);
-    return getSampleFlights(params);
+    console.error('Error fetching flights from API:', error);
+    throw error; // Don't fall back to sample data, let the component handle the error
   }
 };
 
@@ -37,12 +36,29 @@ export const bookFlight = async (
   userId: number, 
   passengerCount: number
 ) => {
-  const response = await api.post('/bookings', {
+  const response = await api.post('/api/bookings/', {
     flight_id: flightId,
     user_id: userId,
     passenger_count: passengerCount
   });
   return response.data;
+};
+
+// Create a new flight
+export const createFlight = async (flightData: Omit<Flight, 'id'>): Promise<Flight> => {
+  const response = await api.post('/api/flights/', flightData);
+  return response.data;
+};
+
+// Update an existing flight
+export const updateFlight = async (id: number, flightData: Partial<Flight>): Promise<Flight> => {
+  const response = await api.put(`/api/flights/${id}`, flightData);
+  return response.data;
+};
+
+// Delete a flight
+export const deleteFlight = async (id: number): Promise<void> => {
+  await api.delete(`/api/flights/${id}`);
 };
 
 // Sample data for development
