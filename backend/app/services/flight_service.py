@@ -15,24 +15,47 @@ class FlightService:
         departure_city: Optional[str] = None,
         arrival_city: Optional[str] = None,
         date: Optional[date] = None,
+        airline: Optional[str] = None,
+        min_price: Optional[float] = None,
+        max_price: Optional[float] = None,
+        dep_time_start: Optional[str] = None,
+        dep_time_end: Optional[str] = None,
         skip: int = 0,
-        limit: int = 10
+        limit: int = 1000
     ) -> List[Flight]:
-        query = self.db.query(Flight)
-        
+        # Start with optimized query - order by departure_time for better performance
+        query = self.db.query(Flight).order_by(Flight.departure_time)
         # Apply filters if provided
         if departure_city:
             query = query.filter(Flight.departure_city == departure_city)
         if arrival_city:
             query = query.filter(Flight.arrival_city == arrival_city)
         if date:
+            from sqlalchemy import func
+            from datetime import datetime, timedelta
+            # Convert date to datetime for proper comparison
+            start_of_day = datetime.combine(date, datetime.min.time())
+            end_of_day = start_of_day + timedelta(days=1)
             query = query.filter(
                 and_(
-                    Flight.departure_time >= date,
-                    Flight.departure_time < date.replace(day=date.day + 1)
+                    Flight.departure_time >= start_of_day,
+                    Flight.departure_time < end_of_day
                 )
             )
-        
+        if airline:
+            # Extract airline code from flight_number (e.g., 'QF' from 'QF286')
+            query = query.filter(Flight.flight_number.like(f"{airline}%"))
+        if min_price is not None:
+            query = query.filter(Flight.price >= min_price)
+        if max_price is not None:
+            query = query.filter(Flight.price <= max_price)
+        if dep_time_start and dep_time_end:
+            # Filter by departure time range (HH:MM)
+            from sqlalchemy import func
+            query = query.filter(
+                func.strftime('%H:%M', Flight.departure_time) >= dep_time_start,
+                func.strftime('%H:%M', Flight.departure_time) <= dep_time_end
+            )
         return query.offset(skip).limit(limit).all()
 
     def get_flight(self, flight_id: int) -> Optional[Flight]:

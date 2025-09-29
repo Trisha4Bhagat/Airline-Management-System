@@ -3,9 +3,9 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import date
 
-from ...core.database import get_db
-from ...schemas.flight import Flight, FlightCreate, FlightUpdate
-from ...services.flight_service import FlightService
+from app.core.database import get_db
+from app.schemas.flight import Flight, FlightCreate, FlightUpdate
+from app.services.flight_service import FlightService
 
 router = APIRouter()
 
@@ -14,8 +14,13 @@ async def list_flights(
     departure_city: Optional[str] = None,
     arrival_city: Optional[str] = None,
     date: Optional[date] = None,
+    airline: Optional[str] = None,
+    min_price: Optional[float] = None,
+    max_price: Optional[float] = None,
+    dep_time_start: Optional[str] = None,  # 'HH:MM' format
+    dep_time_end: Optional[str] = None,    # 'HH:MM' format
     skip: int = Query(0, ge=0),
-    limit: int = Query(10, ge=1, le=100),
+    limit: int = Query(1000, ge=1, le=10000),
     db: Session = Depends(get_db)
 ):
     """
@@ -26,6 +31,11 @@ async def list_flights(
         departure_city=departure_city,
         arrival_city=arrival_city,
         date=date,
+        airline=airline,
+        min_price=min_price,
+        max_price=max_price,
+        dep_time_start=dep_time_start,
+        dep_time_end=dep_time_end,
         skip=skip,
         limit=limit
     )

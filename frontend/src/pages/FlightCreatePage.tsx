@@ -47,7 +47,11 @@ const FlightCreatePage: React.FC = () => {
       };
 
       await createFlight(flightData);
-      navigate('/flights');
+      
+      // Trigger event to notify other components
+      window.dispatchEvent(new CustomEvent('flightDataChanged'));
+      
+      navigate('/admin/dashboard');
     } catch (err) {
       setError('Failed to create flight. Please try again.');
       console.error('Error creating flight:', err);
