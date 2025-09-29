@@ -86,7 +86,11 @@ const FlightEditPage: React.FC = () => {
       };
 
       await updateFlight(parseInt(id), updateData);
-      navigate('/flights');
+      
+      // Trigger event to notify other components
+      window.dispatchEvent(new CustomEvent('flightDataChanged'));
+      
+      navigate('/admin/dashboard');
     } catch (err) {
       setError('Failed to update flight. Please try again.');
       console.error('Error updating flight:', err);
