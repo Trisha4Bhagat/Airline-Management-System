@@ -204,12 +204,6 @@ def check_database_status():
     db = SessionLocal()
     try:
         # Check what database we're actually using
-        result = db.execute(text("SELECT current_database(), current_user;"))
-        row = result.fetchone()
-        print(f"📊 Current Database: {row[0]}")
-        print(f"👤 Current User: {row[1]}")
-        
-        # Count records in each table
         user_count = db.query(User).count()
         flight_count = db.query(Flight).count() 
         booking_count = db.query(Booking).count()
@@ -266,13 +260,6 @@ def create_tables():
         print("✓ Tables created successfully!")
         
     except Exception as e:
-        print(f"❌ Error creating tables: {e}")
-```
-
-### Modifications Made:
-1. **Fixed config.py** - Removed SQLite override logic
-2. **Updated .env file** - Ensured PostgreSQL connection string was correct
-3. **Set up PostgreSQL** - Created proper user and database with permissions
 4. **Deleted old SQLite file** - Removed `airline.db` to prevent confusion
 5. **Created database tables** - Properly initialized PostgreSQL schema
 
@@ -309,29 +296,16 @@ This was the most frustrating yet educational experience. I learned that:
 **Tool Used:** GitHub Copilot  
 **Task:** Creating functional flight search with realistic Australian flight data
 
-### Building on Previous Success:
-With PostgreSQL properly configured from Session 4, I could now focus on creating a working flight search system with real data.
-
-### Prompts Used:
-1. "add values in the database connection" (to populate with real data)
 2. "not sample but real values so that i can connect my database with backend in postgres"
 3. "add data which flys only in australia from today till january random datas multiple flights"
 4. "help me connect flight crud operation backend with frontend so that when i search for flights it actually shows me what i stored"
 5. "why is sample flight in rupeesss" (currency display issue)
 6. "remove the return date option also hotels and holiday packages" (UI cleanup)
-
-### Major Achievement - Australian Flight Data Population:
-
 #### AI-Generated Comprehensive Flight Data Script:
 ```python
 def populate_australian_flights():
     """Populate database with realistic Australian domestic flights"""
     
-    # 45 realistic Australian route combinations
-    australian_routes = [
-        ('Sydney', 'Melbourne'), ('Melbourne', 'Brisbane'),
-        ('Brisbane', 'Perth'), ('Perth', 'Adelaide'),
-        ('Adelaide', 'Darwin'), ('Darwin', 'Cairns'),
         ('Gold Coast', 'Sydney'), ('Hobart', 'Melbourne'),
         # ... total of 45 route combinations
     ]
@@ -352,11 +326,6 @@ def populate_australian_flights():
             for airline_code, airline_name in airlines:
                 # Multiple flights per day (2-4 flights)
                 flights_per_day = random.randint(2, 4)
-                
-                for flight_num in range(flights_per_day):
-                    # Realistic departure times throughout the day
-                    departure_hour = random.choice([6, 8, 10, 12, 14, 16, 18, 20])
-                    departure_minute = random.choice([0, 15, 30, 45])
                     
                     # Realistic flight duration (1-5 hours based on distance)
                     flight_duration = calculate_flight_duration(departure_city, arrival_city)
@@ -365,6 +334,8 @@ def populate_australian_flights():
                     base_price = calculate_base_price(departure_city, arrival_city, airline_code)
                     price = base_price + random.uniform(-50, 100)  # Price variation
                     
+                    #
+                    <span style="color:#1976d2; font-weight:bold; font-size:1.2em;">Session 6: September 29, 2025 - Adding New Flight</span>
                     flight = Flight(
                         flight_number=f"{airline_code}{random.randint(100, 999)}",
                         departure_city=departure_city,
@@ -377,18 +348,8 @@ def populate_australian_flights():
                     
                     flights_created += 1
         
-        current_date += timedelta(days=1)
-    
-    print(f"✅ Created {flights_created} Australian flights")
-```
-
-### Result: 2,554 Realistic Australian Flights Created!
 - **Routes:** 45 realistic Australian domestic routes
 - **Airlines:** Qantas (QF), Virgin Australia (VA), Jetstar (JQ), Rex Airlines (ZL), Tigerair (TT)
-- **Cities:** Sydney, Melbourne, Brisbane, Perth, Adelaide, Gold Coast, Canberra, Darwin, Hobart, Cairns
-- **Pricing:** Realistic AUD $66-$615 based on distance and airline
-- **Date Range:** September 28, 2025 to January 31, 2026
-- **Multiple Daily Flights:** 2-4 flights per route per day
 
 ### Frontend Search Implementation:
 
@@ -398,8 +359,8 @@ def populate_australian_flights():
 const australianCities = [
   'Sydney', 'Melbourne', 'Brisbane', 'Perth', 'Adelaide', 
   'Gold Coast', 'Canberra', 'Darwin', 'Hobart', 'Cairns'
-];
 
+                    <span style="color:#1976d2; font-weight:bold; font-size:1.2em;">Session 7: September 29, 2025 - Edit and Delete Flight</span>
 const [searchForm, setSearchForm] = useState({
   departureCity: '',
   arrivalCity: '', 
@@ -407,11 +368,6 @@ const [searchForm, setSearchForm] = useState({
   travelers: 1
 });
 
-const handleSearch = async () => {
-  if (!searchForm.departureCity || !searchForm.arrivalCity) {
-    setSnackbarMessage('Please select both departure and arrival cities');
-    return;
-  }
 
   const searchParams = new URLSearchParams({
     departure_city: searchForm.departureCity,
@@ -422,26 +378,12 @@ const handleSearch = async () => {
   });
   
   const response = await fetch(`http://localhost:8000/api/flights/?${searchParams}`);
-  const data = await response.json();
-  setFlights(data);
-};
-```
-
 ### UI Improvements Made:
 1. **Removed Return Date Field** - Simplified to one-way search
-2. **Removed Hotel/Holiday Tabs** - Focused purely on flight search
-3. **Australian City Dropdowns** - Real cities instead of hardcoded "New York/LA"
-4. **AUD Currency Display** - Fixed rupee (₹) symbol to show Australian dollars ($)
-5. **Realistic Airline Filters** - Updated to show Australian carriers
-
 ### The Breakthrough Moment:
 When I could finally:
 1. Select "Sydney" as departure city
-2. Select "Melbourne" as arrival city  
-3. Click "Search Flights"
-4. See real Qantas, Virgin Australia, and Jetstar flights with AUD pricing!
 
-### Evidence of Success - Flight Search Working:
 ![Flight Search Functionality Demo](flight-search-demo.mp4)
 
 **Screen Recording demonstrates:**
@@ -460,19 +402,9 @@ When I could finally:
 # AI-Generated script to verify everything was working
 def verify_backend_connection():
     """Comprehensive check of backend API and database connectivity"""
-    
-    # Test 1: Check if server is running
-    try:
-        response = requests.get("http://localhost:8000/")
-        print("✅ Backend server is running")
     except:
         print("❌ Backend server not responding")
         return
-    
-    # Test 2: Check database connection  
-    try:
-        response = requests.get("http://localhost:8000/api/flights/?skip=0&limit=5")
-        flights = response.json()
         print(f"✅ Database connected - {len(flights)} flights available")
         
         # Show sample flight
