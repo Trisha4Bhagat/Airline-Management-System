@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Grid, Typography, Divider, FormControl, InputLabel, Select, MenuItem, IconButton, Box } from '@mui/material';
+import PassengerSeatSelector from './PassengerSeatSelector';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { Flight } from '../../types/Flight';
+import { getBookedSeats } from '../../services/flightService';
 import '../../pages/TravelTheme.css';
 
 interface BookingFormProps {
@@ -20,6 +22,7 @@ export interface PassengerInfo {
   gender: string;
   seatPreference: string;
   mealPreference: string;
+  seat?: string; // selected seat number
 }
 
 export interface BookingFormData {
@@ -27,11 +30,15 @@ export interface BookingFormData {
   contactEmail: string;
   contactPhone: string;
   passengers: PassengerInfo[];
+  bookingReference?: string;
 }
 
 const EnhancedBookingForm: React.FC<BookingFormProps> = ({ open, onClose, flight, onSubmit }) => {
   const [contactEmail, setContactEmail] = useState('');
   const [contactPhone, setContactPhone] = useState('');
+  const [travelerCount, setTravelerCount] = useState<number>(1);
+  const [bookedSeats, setBookedSeats] = useState<string[]>([]);
+  const [loadingSeats, setLoadingSeats] = useState<boolean>(false);
   const [passengers, setPassengers] = useState<PassengerInfo[]>([
     {
       firstName: '',
@@ -39,9 +46,83 @@ const EnhancedBookingForm: React.FC<BookingFormProps> = ({ open, onClose, flight
       age: 30,
       gender: 'male',
       seatPreference: 'window',
-      mealPreference: 'regular'
+      mealPreference: 'regular',
+      seat: undefined
     }
   ]);
+  // Sync passengers array with travelerCount
+  useEffect(() => {
+    if (travelerCount > passengers.length) {
+      setPassengers(prev => [
+        ...prev,
+        ...Array(travelerCount - prev.length).fill(null).map(() => ({
+          firstName: '',
+          lastName: '',
+          age: 30,
+          gender: 'male',
+          seatPreference: 'window',
+          mealPreference: 'regular',
+          seat: undefined
+        }))
+      ]);
+    } else if (travelerCount < passengers.length) {
+      setPassengers(prev => prev.slice(0, travelerCount));
+    }
+  }, [travelerCount]);
+
+  // Clear any validation errors when traveler count changes
+  useEffect(() => {
+    if (Object.keys(errors).length > 0) {
+      setErrors(prev => ({
+        ...prev,
+        passengers: prev.passengers?.slice(0, travelerCount)
+      }));
+    }
+  }, [travelerCount]);
+
+  // Fetch booked seats when form opens
+  useEffect(() => {
+    const fetchBookedSeats = async () => {
+      if (open && flight) {
+        setLoadingSeats(true);
+        try {
+          const seats = await getBookedSeats(flight.id);
+          setBookedSeats(seats);
+        } catch (error) {
+          console.error('Error fetching booked seats:', error);
+          setBookedSeats([]); // Fallback to empty array
+        } finally {
+          setLoadingSeats(false);
+        }
+      }
+    };
+    
+    fetchBookedSeats();
+  }, [open, flight]);
+  // Traveler count handlers
+  const handleTravelerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value;
+    // Prevent string concatenation by replacing the entire value
+    let value = parseInt(inputValue);
+    if (isNaN(value) || inputValue === '') {
+      value = 1;
+    }
+    if (value < 1) value = 1;
+    if (flight && value > flight.available_seats) value = flight.available_seats;
+    setTravelerCount(value);
+  };
+  
+  const handleAddTraveler = () => {
+    if (flight && travelerCount < flight.available_seats) {
+      setTravelerCount(prev => prev + 1);
+    }
+  };
+  
+  const handleRemoveTraveler = () => {
+    if (travelerCount > 1) {
+      setTravelerCount(prev => prev - 1);
+    }
+  };
   
   const [errors, setErrors] = useState<{
     email?: string;
@@ -50,30 +131,9 @@ const EnhancedBookingForm: React.FC<BookingFormProps> = ({ open, onClose, flight
       firstName?: string;
       lastName?: string;
       age?: string;
+      seat?: string;
     }[];
   }>({});
-
-  const handleAddPassenger = () => {
-    setPassengers([
-      ...passengers,
-      {
-        firstName: '',
-        lastName: '',
-        age: 30,
-        gender: 'male',
-        seatPreference: 'window',
-        mealPreference: 'regular'
-      }
-    ]);
-  };
-
-  const handleRemovePassenger = (index: number) => {
-    if (passengers.length > 1) {
-      const newPassengers = [...passengers];
-      newPassengers.splice(index, 1);
-      setPassengers(newPassengers);
-    }
-  };
 
   const handlePassengerChange = (index: number, field: keyof PassengerInfo, value: string | number) => {
     const newPassengers = [...passengers];
@@ -84,6 +144,57 @@ const EnhancedBookingForm: React.FC<BookingFormProps> = ({ open, onClose, flight
     setPassengers(newPassengers);
   };
 
+  // Seat selection handler for a passenger
+  const handleSeatSelect = (index: number, seat: string) => {
+    // Check if seat is already booked by the system
+    if (bookedSeats.includes(seat)) {
+      // Refresh booked seats to get latest data
+      if (flight) {
+        getBookedSeats(flight.id).then(setBookedSeats).catch(console.error);
+      }
+      return;
+    }
+    
+    const newPassengers = [...passengers];
+    
+    // Check if seat is already selected by another passenger in this booking
+    const isDuplicate = passengers.some((p, i) => i !== index && p.seat === seat);
+    if (isDuplicate) {
+      // Remove the seat from other passengers who selected it
+      passengers.forEach((p, i) => {
+        if (i !== index && p.seat === seat) {
+          newPassengers[i] = { ...newPassengers[i], seat: undefined };
+        }
+      });
+    }
+    
+    // Set the seat for current passenger
+    newPassengers[index] = { ...newPassengers[index], seat };
+    setPassengers(newPassengers);
+    
+    // Clear any seat-related errors for this passenger
+    if (errors.passengers?.[index]?.seat) {
+      const newErrors = { ...errors };
+      if (newErrors.passengers) {
+        newErrors.passengers[index] = {
+          ...newErrors.passengers[index],
+          seat: undefined
+        };
+      }
+      setErrors(newErrors);
+    }
+  };
+
+  // Get all selected seats to pass as booked to prevent conflicts
+  const getSelectedSeats = (excludeIndex?: number) => {
+    const selectedSeats = passengers
+      .map((p, i) => i !== excludeIndex ? p.seat : null)
+      .filter(Boolean) as string[];
+    
+    // Combine real booked seats with currently selected seats
+    return [...bookedSeats, ...selectedSeats];
+  };
+
   const validateForm = (): boolean => {
     const newErrors: {
       email?: string;
@@ -92,6 +203,7 @@ const EnhancedBookingForm: React.FC<BookingFormProps> = ({ open, onClose, flight
         firstName?: string;
         lastName?: string;
         age?: string;
+        seat?: string;
       }[];
     } = {};
     
@@ -104,34 +216,60 @@ const EnhancedBookingForm: React.FC<BookingFormProps> = ({ open, onClose, flight
     // Validate phone
     const phoneRegex = /^\+?[0-9]{10,15}$/;
     if (!contactPhone || !phoneRegex.test(contactPhone)) {
-      newErrors.phone = 'Please enter a valid phone number';
+      newErrors.phone = 'Please enter a valid phone number (10-15 digits)';
     }
     
     // Validate passengers
-    const passengerErrors = passengers.map(passenger => {
+    const passengerErrors = passengers.slice(0, travelerCount).map((passenger, index) => {
       const errors: {
         firstName?: string;
         lastName?: string;
         age?: string;
+        seat?: string;
       } = {};
       
-      if (!passenger.firstName) {
+      if (!passenger.firstName?.trim()) {
         errors.firstName = 'First name is required';
       }
-      
-      if (!passenger.lastName) {
+      if (!passenger.lastName?.trim()) {
         errors.lastName = 'Last name is required';
       }
-      
       if (!passenger.age || passenger.age < 0 || passenger.age > 120) {
-        errors.age = 'Please enter a valid age';
+        errors.age = 'Please enter a valid age (0-120)';
+      }
+      if (!passenger.seat) {
+        errors.seat = 'Please select a seat';
+      } else if (bookedSeats.includes(passenger.seat)) {
+        errors.seat = 'This seat is no longer available';
       }
       
       return errors;
     });
     
+    // Check for duplicate seat selections
+    const selectedSeats = passengers.slice(0, travelerCount).map(p => p.seat).filter(Boolean);
+    const duplicateSeats = selectedSeats.filter((seat, index) => selectedSeats.indexOf(seat) !== index);
+    
+    if (duplicateSeats.length > 0) {
+      passengerErrors.forEach((errors, index) => {
+        const passenger = passengers[index];
+        if (passenger.seat && duplicateSeats.includes(passenger.seat)) {
+          errors.seat = 'Duplicate seat selection';
+        }
+      });
+    }
+    
     if (passengerErrors.some(errors => Object.keys(errors).length > 0)) {
       newErrors.passengers = passengerErrors;
+    }
+    
+    // Validate traveler count vs available seats
+    if (flight && travelerCount > flight.available_seats) {
+      if (!newErrors.passengers) newErrors.passengers = [];
+      newErrors.passengers[0] = {
+        ...newErrors.passengers[0],
+        seat: `Only ${flight.available_seats} seats available`
+      };
     }
     
     setErrors(newErrors);
@@ -144,7 +282,7 @@ const EnhancedBookingForm: React.FC<BookingFormProps> = ({ open, onClose, flight
         flightId: flight.id,
         contactEmail,
         contactPhone,
-        passengers
+  passengers
       });
     }
   };
@@ -209,13 +347,13 @@ const EnhancedBookingForm: React.FC<BookingFormProps> = ({ open, onClose, flight
             <Grid item xs={12} sm={4}>
               <Typography variant="subtitle2" color="textSecondary">Flight</Typography>
               <Typography variant="body1" fontWeight="500">
-                {flight.airline} {flight.flight_number}
+                Flight {flight.flight_number}
               </Typography>
             </Grid>
             <Grid item xs={12} sm={8}>
               <Typography variant="subtitle2" color="textSecondary">Route</Typography>
               <Typography variant="body1" fontWeight="500">
-                {flight.origin} ({formatTime(flight.departure_time)}) → {flight.destination} ({formatTime(flight.arrival_time)})
+                {flight.departure_city} ({formatTime(flight.departure_time)}) → {flight.arrival_city} ({formatTime(flight.arrival_time)})
               </Typography>
             </Grid>
             <Grid item xs={12} sm={4}>
@@ -242,9 +380,69 @@ const EnhancedBookingForm: React.FC<BookingFormProps> = ({ open, onClose, flight
         <Typography variant="h6" component="h3" sx={{ mb: 2, fontWeight: 600 }}>
           Contact Information
         </Typography>
-        
         <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={4}>
+            <Typography variant="subtitle2" color="textSecondary" sx={{ mb: 1 }}>
+              Number of Travelers
+            </Typography>
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              border: '1px solid #ccc', 
+              borderRadius: 1, 
+              overflow: 'hidden',
+              width: 'fit-content'
+            }}>
+              <IconButton 
+                onClick={handleRemoveTraveler} 
+                disabled={travelerCount <= 1}
+                size="small"
+                sx={{ 
+                  borderRadius: 0, 
+                  minWidth: 40,
+                  height: 40,
+                  '&:disabled': { opacity: 0.5 }
+                }}
+              >
+                <RemoveIcon fontSize="small" />
+              </IconButton>
+              <TextField
+                type="number"
+                value={travelerCount}
+                onChange={handleTravelerChange}
+                inputProps={{ 
+                  min: 1, 
+                  max: flight?.available_seats || 1,
+                  style: { textAlign: 'center', width: 60, padding: '8px 4px' }
+                }}
+                sx={{ 
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': { border: 'none' },
+                    '&:hover fieldset': { border: 'none' },
+                    '&.Mui-focused fieldset': { border: 'none' }
+                  }
+                }}
+                onFocus={(e) => e.target.select()} // Select all text on focus to prevent concatenation
+              />
+              <IconButton 
+                onClick={handleAddTraveler} 
+                disabled={flight && travelerCount >= flight.available_seats}
+                size="small"
+                sx={{ 
+                  borderRadius: 0, 
+                  minWidth: 40,
+                  height: 40,
+                  '&:disabled': { opacity: 0.5 }
+                }}
+              >
+                <AddIcon fontSize="small" />
+              </IconButton>
+            </Box>
+            <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5, display: 'block' }}>
+              Max: {flight?.available_seats || 0} seats
+            </Typography>
+          </Grid>
+          <Grid item xs={12} md={4}>
             <TextField
               label="Email Address"
               fullWidth
@@ -255,7 +453,7 @@ const EnhancedBookingForm: React.FC<BookingFormProps> = ({ open, onClose, flight
               required
             />
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={4}>
             <TextField
               label="Phone Number"
               fullWidth
@@ -269,48 +467,15 @@ const EnhancedBookingForm: React.FC<BookingFormProps> = ({ open, onClose, flight
           </Grid>
         </Grid>
         
-        <Box sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          mb: 2
-        }}>
-          <Typography variant="h6" component="h3" sx={{ fontWeight: 600 }}>
-            Passenger Details
-          </Typography>
-          <Button 
-            startIcon={<AddIcon />} 
-            onClick={handleAddPassenger}
-            color="primary"
-            variant="outlined"
-            disabled={passengers.length >= flight.available_seats}
-            sx={{ borderRadius: '20px', fontWeight: 500 }}
-          >
-            Add Passenger
-          </Button>
-        </Box>
+        <Typography variant="h6" component="h3" sx={{ fontWeight: 600, mb: 2 }}>
+          Passenger Details
+        </Typography>
         
-        {passengers.map((passenger, index) => (
-          <Box key={index} sx={{ mb: 3, pb: 3, borderBottom: index < passengers.length - 1 ? '1px solid #eee' : 'none' }}>
-            <Box sx={{ 
-              display: 'flex',
-              justifyContent: 'space-between',
-              mb: 1
-            }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
-                Passenger {index + 1}
-              </Typography>
-              {passengers.length > 1 && (
-                <IconButton 
-                  size="small" 
-                  onClick={() => handleRemovePassenger(index)}
-                  color="error"
-                >
-                  <RemoveIcon fontSize="small" />
-                </IconButton>
-              )}
-            </Box>
-            
+        {passengers.slice(0, travelerCount).map((passenger, index) => (
+          <Box key={index} sx={{ mb: 3, pb: 3, borderBottom: index < travelerCount - 1 ? '1px solid #eee' : 'none' }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 2 }}>
+              Passenger {index + 1}
+            </Typography>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6} md={4}>
                 <TextField
@@ -395,6 +560,27 @@ const EnhancedBookingForm: React.FC<BookingFormProps> = ({ open, onClose, flight
                   </Select>
                 </FormControl>
               </Grid>
+              <Grid item xs={12}>
+                {loadingSeats ? (
+                  <Box sx={{ textAlign: 'center', py: 3 }}>
+                    <Typography variant="body2" color="textSecondary">
+                      Loading seat availability...
+                    </Typography>
+                  </Box>
+                ) : (
+                  <PassengerSeatSelector
+                    selectedSeat={passenger.seat || null}
+                    onSelect={(seat) => handleSeatSelect(index, seat)}
+                    bookedSeats={getSelectedSeats(index)}
+                    passengerIndex={index}
+                  />
+                )}
+                {errors.passengers?.[index]?.seat && (
+                  <Typography color="error" variant="caption" sx={{ mt: 1, display: 'block' }}>
+                    {errors.passengers[index]?.seat}
+                  </Typography>
+                )}
+              </Grid>
             </Grid>
           </Box>
         ))}
@@ -412,11 +598,11 @@ const EnhancedBookingForm: React.FC<BookingFormProps> = ({ open, onClose, flight
               Total Price
             </Typography>
             <Typography variant="caption" color="textSecondary">
-              {passengers.length} passenger{passengers.length > 1 ? 's' : ''}
+              {travelerCount} traveler{travelerCount > 1 ? 's' : ''}
             </Typography>
           </div>
           <Typography variant="h5" fontWeight="700" color="var(--primary-color)">
-            ${flight.price * passengers.length}
+            ${flight.price * travelerCount}
           </Typography>
         </Box>
       </DialogContent>
