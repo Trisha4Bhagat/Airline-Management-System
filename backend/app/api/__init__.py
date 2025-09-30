@@ -1,8 +1,6 @@
 from fastapi import APIRouter
-
-from .endpoints import flights
+from app.api.endpoints import flights, stats
 
 api_router = APIRouter()
-
-# Include all endpoint routers
 api_router.include_router(flights.router, prefix="/flights", tags=["flights"])
+api_router.include_router(stats.router, prefix="/stats", tags=["stats"])
