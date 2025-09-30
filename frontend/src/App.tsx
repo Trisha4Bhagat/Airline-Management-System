@@ -11,8 +11,14 @@ import RegisterPage from './pages/RegisterPage'
 import DashboardPage from './pages/DashboardPage'
 import EnhancedDashboardPage from './pages/EnhancedDashboardPage'
 
+// Import admin components
+import AdminLoginPage from './pages/AdminLoginPage'
+import AdminDashboard from './pages/AdminDashboard'
+import FlightFormPage from './pages/FlightFormPage'
+
 // Auth context
 import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { AdminProvider, useAdmin } from './contexts/AdminContext'
 import { AppBar, Toolbar, Typography, Button, Box, Container, CircularProgress } from '@mui/material'
 
 // Protected route component
@@ -74,6 +80,17 @@ const NavigationBar = () => {
             }}
           >
             Flights
+          </Button>
+          <Button 
+            color="inherit" 
+            component={Link} 
+            to="/admin/login"
+            sx={{ 
+              borderRadius: '20px', 
+              '&:hover': { background: 'rgba(255,255,255,0.1)' }
+            }}
+          >
+            Admin
           </Button>
           {isAuthenticated ? (
             <>
@@ -146,29 +163,46 @@ const NavigationBar = () => {
   );
 };
 
+// Protected admin route component
+const AdminProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAdmin } = useAdmin();
+  return isAdmin ? <>{children}</> : <Navigate to="/admin/login" />;
+};
+
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <div className="App">
-          <NavigationBar />
-        <main>
-          <Routes>
-            <Route path="/" element={<ProtectedRoute><EnhancedDashboardPage /></ProtectedRoute>} />
-            <Route path="/dashboard" element={<ProtectedRoute><EnhancedDashboardPage /></ProtectedRoute>} />
-            <Route path="/flights" element={<NewFlightsPage />} />
-            <Route path="/flights/:id" element={<FlightDetailPage />} />
-            <Route path="/flights-classic" element={<FlightsPage />} />
-            <Route path="/booking/:flightId" element={<ProtectedRoute><BookingPage /></ProtectedRoute>} />
-            <Route path="/bookings" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="*" element={<Navigate to="/flights" />} />
-          </Routes>
-        </main>
-      </div>
-    </BrowserRouter>
-  </AuthProvider>
+      <AdminProvider>
+        <BrowserRouter>
+          <div className="App">
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/flights" element={<><NavigationBar /><NewFlightsPage /></>} />
+              <Route path="/flights/:id" element={<><NavigationBar /><FlightDetailPage /></>} />
+              <Route path="/flights-classic" element={<><NavigationBar /><FlightsPage /></>} />
+              <Route path="/login" element={<><NavigationBar /><LoginPage /></>} />
+              <Route path="/register" element={<><NavigationBar /><RegisterPage /></>} />
+              
+              {/* Protected User Routes */}
+              <Route path="/" element={<><NavigationBar /><ProtectedRoute><EnhancedDashboardPage /></ProtectedRoute></>} />
+              <Route path="/dashboard" element={<><NavigationBar /><ProtectedRoute><EnhancedDashboardPage /></ProtectedRoute></>} />
+              <Route path="/booking/:flightId" element={<><NavigationBar /><ProtectedRoute><BookingPage /></ProtectedRoute></>} />
+              <Route path="/bookings" element={<><NavigationBar /><ProtectedRoute><DashboardPage /></ProtectedRoute></>} />
+              
+              {/* Admin Routes */}
+              <Route path="/admin/login" element={<AdminLoginPage />} />
+              <Route path="/admin/dashboard" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
+              <Route path="/admin/flights/create" element={<AdminProtectedRoute><FlightFormPage /></AdminProtectedRoute>} />
+              <Route path="/admin/flights/edit/:id" element={<AdminProtectedRoute><FlightFormPage /></AdminProtectedRoute>} />
+              <Route path="/admin/flights/:id" element={<AdminProtectedRoute><FlightDetailPage /></AdminProtectedRoute>} />
+              
+              {/* Default redirect removed for debugging admin route */}
+              {/* <Route path="*" element={<Navigate to="/flights" />} /> */}
+            </Routes>
+          </div>
+        </BrowserRouter>
+      </AdminProvider>
+    </AuthProvider>
   );
 }
 export default App;
