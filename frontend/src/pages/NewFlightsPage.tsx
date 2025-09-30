@@ -6,7 +6,7 @@ import RestaurantIcon from '@mui/icons-material/Restaurant';
 import WifiIcon from '@mui/icons-material/Wifi';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Flight } from '../types/Flight';
-import { fetchFlights, searchFlights } from '../services/flightService';
+import { fetchFlights, searchFlights, getAirlines, getPriceRange } from '../services/flightService';
 import './TravelTheme.css';
 import '../components/flights/AdminControls.css';
 import { useAdmin } from '../contexts/AdminContext';
@@ -20,13 +20,14 @@ const NewFlightsPage: React.FC = () => {
   const [flights, setFlights] = useState<Flight[]>([]);
   const [allFlights, setAllFlights] = useState<Flight[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [searchLoading, setSearchLoading] = useState<boolean>(false); // Separate search loading
   const [error, setError] = useState<string | null>(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(0);
-  const [selectedMinPrice, setSelectedMinPrice] = useState(0);
+  const [basePriceRange, setBasePriceRange] = useState({min: 0, max: 0}); // Cache base prices
   const [selectedMaxPrice, setSelectedMaxPrice] = useState(0);
   const [fromCity, setFromCity] = useState('Sydney');
   const [toCity, setToCity] = useState('Melbourne');
@@ -37,14 +38,25 @@ const NewFlightsPage: React.FC = () => {
   const [selectedAirline, setSelectedAirline] = useState('');
   const [depTime, setDepTime] = useState<'morning' | 'afternoon' | 'evening' | ''>('');
 
-  // Auto-search when airline or depTime changes
+  // Reset price range when number of travelers changes
   useEffect(() => {
-    // Only trigger if not initial load
-    if (!loading && flights.length > 0) {
-      handleSearch(new Event('submit') as any);
+    if (minPrice > 0 && maxPrice > 0) {
+      setSelectedMaxPrice(maxPrice);
+    }
+  }, [numberOfTravelers, minPrice, maxPrice]);
+
+  // Auto-search when filters change (optimized with faster debounce)
+  useEffect(() => {
+    // Only trigger if not initial load and we have completed initial data load
+    if (!loading && allFlights.length > 0 && fromCity && toCity) {
+      const timeoutId = setTimeout(() => {
+        handleSearch();
+      }, 150); // Reduced debounce for faster response
+      
+      return () => clearTimeout(timeoutId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedAirline, depTime]);
+  }, [selectedAirline, depTime, numberOfTravelers, selectedMaxPrice, fromCity, toCity, departureDate]);
   const navigate = useNavigate();
   const location = useLocation();
   const { isAdmin } = useAdmin();
@@ -58,22 +70,25 @@ const NewFlightsPage: React.FC = () => {
     const loadFlights = async () => {
       try {
         setLoading(true);
-        console.log('Fetching flights from API...');
         const data = await fetchFlights();
-        console.log('Flights data received:', data);
         setAllFlights(data);
         setFlights(data);
-        // Extract min/max price
-        const prices = data.map(f => f.price);
-        const minP = Math.min(...prices);
-        const maxP = Math.max(...prices);
-        setMinPrice(minP);
-        setMaxPrice(maxP);
-        setSelectedMinPrice(minP);
-        setSelectedMaxPrice(maxP);
-        // Extract airline codes from flight_number
-        const airlineSet = new Set(data.map(f => f.flight_number.substring(0, 2)));
-        setAirlines(Array.from(airlineSet));
+        
+        // Get initial price range for 1 traveler and airlines
+        const [initialPriceData, airlinesList] = await Promise.all([
+          getPriceRange(numberOfTravelers), // Get range for current number of travelers
+          getAirlines()
+        ]);
+        
+        // Store base (per-person) prices for calculation
+        setBasePriceRange({min: initialPriceData.min_price, max: initialPriceData.max_price});
+        
+        // Calculate total prices for display (per-person price × travelers)
+        setMinPrice(initialPriceData.min_price * numberOfTravelers);
+        setMaxPrice(initialPriceData.max_price * numberOfTravelers);
+        setSelectedMaxPrice(initialPriceData.max_price * numberOfTravelers);
+        setAirlines(airlinesList);
+        
         setError(null);
       } catch (err) {
         setError('Failed to load flights. Please try again later.');
@@ -85,18 +100,12 @@ const NewFlightsPage: React.FC = () => {
 
     loadFlights();
     
-    // Listen for flight data changes from admin panel
+    // Listen for flight data changes from admin panel (but remove auto-refresh)
     const handleFlightDataChanged = () => {
-      console.log('Flight data changed - refreshing user view');
       loadFlights();
     };
     
     window.addEventListener('flightDataChanged', handleFlightDataChanged);
-    
-    // Auto-refresh every 2 minutes to keep data fresh
-    const refreshInterval = setInterval(() => {
-      loadFlights();
-    }, 120000);
     
     // Show appropriate success messages
     if (created === 'true') {
@@ -121,9 +130,43 @@ const NewFlightsPage: React.FC = () => {
     
     return () => {
       window.removeEventListener('flightDataChanged', handleFlightDataChanged);
-      clearInterval(refreshInterval);
     };
   }, [created, deleted]);
+
+  // Update price range when number of travelers changes
+  useEffect(() => {
+    const updatePriceRange = async () => {
+      if (numberOfTravelers > 0) {
+        try {
+          // Get updated price range from backend (returns per-person prices)
+          const priceRange = await getPriceRange(numberOfTravelers);
+          
+          // Update base prices cache
+          setBasePriceRange({min: priceRange.min_price, max: priceRange.max_price});
+          
+          // Calculate total prices for display
+          const totalMin = priceRange.min_price * numberOfTravelers;
+          const totalMax = priceRange.max_price * numberOfTravelers;
+          
+          setMinPrice(totalMin);
+          setMaxPrice(totalMax);
+          setSelectedMaxPrice(totalMax);
+        } catch (error) {
+          console.error('Error updating price range:', error);
+          // Fallback to simple multiplication if API fails
+          if (basePriceRange.min > 0 && basePriceRange.max > 0) {
+            const newMin = basePriceRange.min * numberOfTravelers;
+            const newMax = basePriceRange.max * numberOfTravelers;
+            setMinPrice(newMin);
+            setMaxPrice(newMax);
+            setSelectedMaxPrice(newMax);
+          }
+        }
+      }
+    };
+
+    updatePriceRange();
+  }, [numberOfTravelers]);
 
   const handleBookFlight = (flightId: number) => {
     navigate(`/booking/${flightId}`);
@@ -169,21 +212,22 @@ const NewFlightsPage: React.FC = () => {
   // No local filtering; always use backend results
   const filteredFlights = flights;
 
-  // Search handler
+  // Search handler (optimized with separate loading state)
   const handleSearch = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    setLoading(true);
+    setSearchLoading(true); // Use separate loading state for searches
     try {
       let dep_time_start: string | undefined = undefined;
       let dep_time_end: string | undefined = undefined;
       if (depTime === 'morning') {
-        dep_time_start = '00:00'; dep_time_end = '11:59';
+        dep_time_start = '06:00'; dep_time_end = '11:59';
       } else if (depTime === 'afternoon') {
         dep_time_start = '12:00'; dep_time_end = '17:59';
       } else if (depTime === 'evening') {
         dep_time_start = '18:00'; dep_time_end = '23:59';
       }
-      // Send all filters, including numberOfTravelers and price range
+      
+      // Build search parameters - send per-person max price to backend
       const params: any = {
         departure_city: fromCity,
         arrival_city: toCity,
@@ -191,46 +235,97 @@ const NewFlightsPage: React.FC = () => {
         airline: selectedAirline || undefined,
         dep_time_start,
         dep_time_end,
-        min_price: selectedMinPrice / numberOfTravelers, // backend expects per-ticket price
-        max_price: selectedMaxPrice / numberOfTravelers, // backend expects per-ticket price
+        max_price: Math.round(selectedMaxPrice / numberOfTravelers), // Convert to per-person price
       };
-      const filtered = await searchFlights(params);
-      setFlights(filtered);
+      
+      // Remove undefined values to clean up the query
+      Object.keys(params).forEach(key => {
+        if (params[key] === undefined || params[key] === '') {
+          delete params[key];
+        }
+      });
+
+      const searchResults = await searchFlights(params);
+      
+      // Apply travelers multiplier for display (backend returns per-person prices)
+      const resultsWithTotalPricing = searchResults.map(flight => ({
+        ...flight,
+        basePrice: flight.price, // Store original per-person price
+        price: flight.price * numberOfTravelers, // Display total price
+        pricePerPerson: flight.price // Keep per-person price for reference
+      }));
+      
+      setFlights(resultsWithTotalPricing);
       setError(null);
+      
+      if (searchResults.length === 0) {
+        setError('No flights found matching your criteria. Try adjusting your filters.');
+      }
     } catch (err) {
-      setError('Failed to search flights.');
+      console.error('Search error:', err);
+      setError('Failed to search flights. Please try again.');
       setFlights([]);
     } finally {
-      setLoading(false);
+      setSearchLoading(false); // Reset search loading state
     }
   };
 
   return (
-    <div className="travel-container" style={{ background: 'linear-gradient(135deg, #e0f7fa 0%, #fff 100%)', minHeight: '100vh', paddingBottom: 40 }}>
-      <div className="travel-hero" style={{ borderRadius: 24, boxShadow: '0 4px 24px rgba(0,0,0,0.07)', margin: '32px auto', maxWidth: 1200 }}>
-        <div className="travel-hero-content" style={{ padding: '48px 32px 32px 32px' }}>
-          <h1 className="travel-hero-title" style={{ fontSize: 40, fontWeight: 700, color: '#0066cc', marginBottom: 8 }}>Find Your Perfect Flight</h1>
-          <p className="travel-hero-subtitle" style={{ fontSize: 20, color: '#333', marginBottom: 32 }}>
-            Discover the best deals on flights to your favorite destinations
-          </p>
-          {loading && (
-            <div className="loading-indicator">
-              <p>Loading flights...</p>
-            </div>
-          )}
-          {error && (
-            <div className="error-message">
-              <p>{error}</p>
-            </div>
-          )}
+    <div className="travel-container" style={{ background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)', minHeight: '100vh', paddingBottom: 40 }}>
+      <div className="travel-hero">
+        <div className="hero-container">
+          <div className="hero-text-column">
+            <h1 className="hero-main-heading">Welcome to SkyJourney Airlines</h1>
+            <h2 className="hero-subheading">Find your perfect flight</h2>
+            <button className="hero-cta-button" onClick={() => {
+              const searchSection = document.querySelector('.travel-search-container');
+              if (searchSection) {
+                searchSection.scrollIntoView({ behavior: 'smooth' });
+              }
+            }}>
+              Book Now
+            </button>
+          </div>
         </div>
       </div>
+      
+      {/* Loading and Error States */}
+      {loading && allFlights.length === 0 && (
+        <div className="loading-indicator" style={{ 
+          textAlign: 'center', 
+          padding: '20px 24px', 
+          background: 'linear-gradient(135deg, rgba(0,99,178,0.05) 0%, rgba(255,255,255,0.8) 100%)',
+          borderRadius: 16,
+          border: '1px solid rgba(0,99,178,0.1)',
+          backdropFilter: 'blur(10px)',
+          animation: 'pulse 2s ease-in-out infinite',
+          margin: '24px auto',
+          maxWidth: 600
+        }}>
+          <div style={{ fontSize: 24, marginBottom: 8 }}>🔄</div>
+          <p style={{ color: '#1976d2', margin: 0, fontWeight: 500 }}>Loading flights and setting up search...</p>
+        </div>
+      )}
+      {error && !loading && (
+        <div className="error-message" style={{ 
+          textAlign: 'center', 
+          padding: '20px 24px', 
+          background: 'linear-gradient(135deg, rgba(244,67,54,0.05) 0%, rgba(255,255,255,0.9) 100%)',
+          borderRadius: 16,
+          border: '1px solid rgba(244,67,54,0.2)',
+          backdropFilter: 'blur(10px)',
+          margin: '24px auto',
+          maxWidth: 600
+        }}>
+          <div style={{ fontSize: 24, marginBottom: 8 }}>⚠️</div>
+          <p style={{ color: '#d32f2f', margin: 0, fontWeight: 500 }}>{error}</p>
+        </div>
+      )}
+      
       <div className="travel-search-container" style={{ margin: '0 auto', maxWidth: 900, marginBottom: 32 }}>
         <div className="travel-search-card" style={{ borderRadius: 20, boxShadow: '0 2px 12px rgba(0,0,0,0.08)', padding: 32, background: '#fff' }}>
           <div className="travel-search-tabs">
             <div className="travel-search-tab active">Flights</div>
-            <div className="travel-search-tab">Hotels</div>
-            <div className="travel-search-tab">Holiday Packages</div>
           </div>
           
           <form className="travel-search-form" onSubmit={handleSearch}>
@@ -313,40 +408,60 @@ const NewFlightsPage: React.FC = () => {
                 onChange={e => setDepTime(e.target.value as any)}
               >
                 <option value="">Any</option>
-                <option value="morning">Morning (00:00–11:59)</option>
+                <option value="morning">Morning (06:00–11:59)</option>
                 <option value="afternoon">Afternoon (12:00–17:59)</option>
                 <option value="evening">Evening (18:00–23:59)</option>
               </select>
             </div>
             
             <div className="travel-search-field">
-              <label className="travel-search-label">Price Range</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span>${selectedMinPrice}</span>
+              <label className="travel-search-label">Maximum Price (Total for {numberOfTravelers} traveler{numberOfTravelers > 1 ? 's' : ''})</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <input
                   type="range"
                   min={minPrice}
-                  max={selectedMaxPrice}
-                  value={selectedMinPrice}
-                  onChange={e => setSelectedMinPrice(Number(e.target.value))}
-                  style={{ flex: 1 }}
-                />
-                <span>${selectedMaxPrice}</span>
-                <input
-                  type="range"
-                  min={selectedMinPrice}
                   max={maxPrice}
                   value={selectedMaxPrice}
-                  onChange={e => setSelectedMaxPrice(Number(e.target.value))}
-                  style={{ flex: 1 }}
+                  onChange={e => setSelectedMaxPrice(Math.round(Number(e.target.value)))}
+                  style={{ flex: 1, accentColor: 'var(--primary-color)' }}
                 />
+                <input
+                  type="number"
+                  value={selectedMaxPrice}
+                  onChange={e => setSelectedMaxPrice(Math.round(Number(e.target.value)))}
+                  style={{ 
+                    width: '100px', 
+                    padding: '8px', 
+                    border: '1px solid #ddd', 
+                    borderRadius: '4px',
+                    fontSize: '14px'
+                  }}
+                  min={minPrice}
+                  max={maxPrice}
+                />
+              </div>
+              <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
+                Show flights up to ${selectedMaxPrice.toLocaleString()} (Range: ${minPrice} - ${maxPrice})
               </div>
             </div>
             
-            <button className="travel-search-button" type="submit">
-              Search Flights
+            <button className="travel-search-button" type="submit" disabled={searchLoading}>
+              {searchLoading ? 'Searching...' : 'Search Flights'}
             </button>
           </form>
+          
+          {/* Search Loading Indicator */}
+          {searchLoading && (
+            <div style={{ 
+              textAlign: 'center', 
+              padding: '12px',
+              color: '#1976d2',
+              fontSize: '14px',
+              fontWeight: 500
+            }}>
+              🔍 Searching for flights...
+            </div>
+          )}
         </div>
       </div>
       
@@ -355,25 +470,42 @@ const NewFlightsPage: React.FC = () => {
           <h3 className="travel-filters-title">Filter Results</h3>
           
           <div className="travel-filter-group">
-            <label className="travel-filter-label">Max Price</label>
+            <label className="travel-filter-label">Maximum Price (Total)</label>
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
               <span style={{ fontWeight: 600, marginRight: 8 }}>
-                Up to ${maxPrice.toLocaleString()}
+                Up to ${(selectedMaxPrice * numberOfTravelers).toLocaleString()}
               </span>
-              <span style={{ color: '#888', fontSize: 14 }}>(per ticket)</span>
+              <span style={{ color: '#888', fontSize: 14 }}>
+                (for {numberOfTravelers} traveler{numberOfTravelers > 1 ? 's' : ''})
+              </span>
             </div>
-            <input 
-              type="range" 
-              min="100" 
-              max="2000" 
-              step="50" 
-              value={maxPrice}
-              onChange={e => setMaxPrice(Number(e.target.value))}
-              style={{ width: '100%' }}
-            />
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem' }}>
-              <span>$100</span>
-              <span>$2000</span>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <input 
+                type="range" 
+                min={minPrice * numberOfTravelers}
+                max={maxPrice * numberOfTravelers}
+                value={selectedMaxPrice * numberOfTravelers}
+                onChange={e => setSelectedMaxPrice(Math.ceil(Number(e.target.value) / numberOfTravelers))}
+                style={{ flex: 1, accentColor: 'var(--primary-color)' }}
+              />
+              <input
+                type="number"
+                value={selectedMaxPrice * numberOfTravelers}
+                onChange={e => setSelectedMaxPrice(Math.ceil(Number(e.target.value) / numberOfTravelers))}
+                style={{ 
+                  width: '80px', 
+                  padding: '4px', 
+                  border: '1px solid #ddd', 
+                  borderRadius: '4px',
+                  fontSize: '12px'
+                }}
+                min={minPrice * numberOfTravelers}
+                max={maxPrice * numberOfTravelers}
+              />
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', fontSize: '12px', color: '#666' }}>
+              <span>${minPrice * numberOfTravelers} total</span>
+              <span>${maxPrice * numberOfTravelers} total</span>
             </div>
           </div>
           
@@ -411,7 +543,7 @@ const NewFlightsPage: React.FC = () => {
                   value="morning"
                   checked={depTime === 'morning'}
                   onChange={() => setDepTime('morning')}
-                /> Morning (00:00–11:59)
+                /> Morning (06:00–11:59)
               </label>
               <label className="travel-filter-option">
                 <input
@@ -435,9 +567,33 @@ const NewFlightsPage: React.FC = () => {
           </div>
         </div>
         <div className="travel-flight-list" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: 32, marginTop: 32, flex: 1 }}>
+          {loading && (
+            <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: 40 }}>
+              <div style={{ fontSize: 18, color: '#666' }}>🔍 Searching for flights...</div>
+            </div>
+          )}
+          {!loading && error && (
+            <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: 40 }}>
+              <div style={{ fontSize: 18, color: '#e44', marginBottom: 8 }}>❌ Error</div>
+              <div style={{ color: '#666' }}>{error}</div>
+            </div>
+          )}
           {!loading && !error && filteredFlights.length === 0 && (
-            <div style={{ gridColumn: '1/-1', textAlign: 'center', color: '#888', fontSize: 20, padding: 40 }}>
-              No flights found for your search.
+            <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: 40 }}>
+              <div style={{ fontSize: 24, color: '#888', marginBottom: 16 }}>✈️ No flights found</div>
+              <div style={{ fontSize: 16, color: '#aaa', marginBottom: 16 }}>
+                No flights match your current search criteria.
+              </div>
+              <div style={{ fontSize: 14, color: '#999' }}>
+                Try adjusting your filters:
+                <ul style={{ listStyle: 'none', padding: 0, marginTop: 8 }}>
+                  <li>• Change departure or arrival cities</li>
+                  <li>• Select a different date</li>
+                  <li>• Adjust your budget range</li>
+                  <li>• Try a different departure time</li>
+                  <li>• Select "All Airlines"</li>
+                </ul>
+              </div>
             </div>
           )}
           {!loading && !error && filteredFlights.map((flight) => (
@@ -483,10 +639,10 @@ const NewFlightsPage: React.FC = () => {
                 
                 <div className="travel-flight-price-container">
                   <div className="travel-flight-price">
-                    ${(flight.price * numberOfTravelers).toLocaleString()}
+                    ${flight.price.toLocaleString()}
                     {numberOfTravelers > 1 && (
                       <div style={{ fontSize: '14px', color: '#666', fontWeight: 'normal' }}>
-                        ${flight.price} × {numberOfTravelers} travelers
+                        ${(flight.pricePerPerson || flight.basePrice || flight.price / numberOfTravelers).toLocaleString()} × {numberOfTravelers} travelers
                       </div>
                     )}
                   </div>
