@@ -9,6 +9,25 @@ from app.services.flight_service import FlightService
 
 router = APIRouter()
 
+@router.get("/airlines", response_model=List[str])
+async def get_airlines(db: Session = Depends(get_db)):
+    """
+    Get all unique airlines from flights
+    """
+    flight_service = FlightService(db)
+    return flight_service.get_airlines()
+
+@router.get("/price-range", response_model=dict)
+async def get_price_range(
+    travelers: int = 1,
+    db: Session = Depends(get_db)
+):
+    """
+    Get the min and max prices from all flights, adjusted for number of travelers
+    """
+    flight_service = FlightService(db)
+    return flight_service.get_price_range(travelers=travelers)
+
 @router.get("/", response_model=List[Flight])
 async def list_flights(
     departure_city: Optional[str] = None,
