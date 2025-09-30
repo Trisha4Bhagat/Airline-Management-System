@@ -2,7 +2,7 @@ import React from 'react';
 import './Dashboard.css';
 import './ModernDashboard.css';
 import { Link } from 'react-router-dom';
-import DashboardLayout from '../components/common/DashboardLayout';
+// import DashboardLayout from '../components/common/DashboardLayout';
 
 // Sample data for the dashboard
 const flightStatistics = {
@@ -57,7 +57,7 @@ const Dashboard: React.FC = () => {
   const dateString = now.toLocaleDateString(undefined, options);
 
   return (
-    <DashboardLayout>
+    <div className="dashboard-wrapper">
       <div className="dashboard-container">
         <div className="dashboard-header">
           <div className="welcome-section">
@@ -65,9 +65,9 @@ const Dashboard: React.FC = () => {
             <p className="date">{dateString}</p>
           </div>
           <div className="dashboard-actions">
-            <button className="action-button primary">
+            <Link to="/admin/flights/create" className="action-button primary" style={{ textDecoration: 'none', color: 'inherit' }}>
               <i className="icon-plus"></i> Add New Flight
-            </button>
+            </Link>
             <button className="action-button secondary">
               <i className="icon-download"></i> Export Report
             </button>
@@ -238,7 +238,7 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
     </div>
-    </DashboardLayout>
+    </div>
   );
 };
 

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Container, Box, Paper, Typography, Grid, Button, Alert } from '@mui/material';
+import { Container, Box, Paper, Typography, Grid, Button, Alert, Divider } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { Flight } from '../types/Flight';
-import { fetchFlightById } from '../services/flightService';
+import { fetchFlightById, createBooking } from '../services/flightService';
 import EnhancedBookingForm from '../components/flights/EnhancedBookingForm';
 import { BookingFormData } from '../components/flights/EnhancedBookingForm';
 import './TravelTheme.css';
@@ -17,6 +17,8 @@ const BookingPage: React.FC = () => {
   const [isBookingFormOpen, setIsBookingFormOpen] = useState<boolean>(false);
   const [bookingSuccess, setBookingSuccess] = useState<boolean>(false);
   const [bookingData, setBookingData] = useState<BookingFormData | null>(null);
+  const [bookingError, setBookingError] = useState<string | null>(null);
+  const [refreshFlag, setRefreshFlag] = useState(0);
 
   useEffect(() => {
     const loadFlight = async () => {
@@ -25,7 +27,6 @@ const BookingPage: React.FC = () => {
         setLoading(false);
         return;
       }
-      
       try {
         setLoading(true);
         const data = await fetchFlightById(parseInt(flightId));
@@ -38,9 +39,8 @@ const BookingPage: React.FC = () => {
         setLoading(false);
       }
     };
-
     loadFlight();
-  }, [flightId]);
+  }, [flightId, refreshFlag]);
 
   const handleBookFlight = () => {
     setIsBookingFormOpen(true);
@@ -50,15 +50,58 @@ const BookingPage: React.FC = () => {
     setIsBookingFormOpen(false);
   };
 
-  const handleBookingSubmit = (formData: BookingFormData) => {
-    // Here you would typically call an API to process the booking
-    console.log('Booking submitted:', formData);
-    setBookingData(formData);
-    setIsBookingFormOpen(false);
-    setBookingSuccess(true);
+  const handleBookingSubmit = async (formData: BookingFormData) => {
+    setBookingError(null);
+    if (!flight) return;
     
-    // In a real app, you would wait for API response before setting success
-    // For this demo, we'll just simulate a successful booking
+    try {
+      // Validate that all passengers have seats selected
+      const missingSeats = formData.passengers.filter(p => !p.seat);
+      if (missingSeats.length > 0) {
+        setBookingError('Please select seats for all passengers');
+        return;
+      }
+      
+      // Check if we have more passengers than available seats
+      if (formData.passengers.length > flight.available_seats) {
+        setBookingError(`Only ${flight.available_seats} seats available, but ${formData.passengers.length} travelers selected`);
+        return;
+      }
+      
+      const result = await createBooking({
+        flightId: flight.id,
+        contactEmail: formData.contactEmail,
+        contactPhone: formData.contactPhone,
+        passengers: formData.passengers
+      });
+      
+      setBookingData({
+        ...formData,
+        bookingReference: result.bookingReference
+      });
+      setIsBookingFormOpen(false);
+      setBookingSuccess(true);
+      
+      // Refresh flight data to update available seats
+      setRefreshFlag(f => f + 1);
+      
+    } catch (err: any) {
+      console.error('Booking error:', err);
+      
+      if (err.response?.status === 409) {
+        // Seat conflict error - refresh flight and show specific error
+        setBookingError('Some selected seats are no longer available. The seat map has been updated - please choose different seats.');
+        setRefreshFlag(f => f + 1);
+      } else if (err.response?.status === 400) {
+        // Validation error
+        const detail = err.response.data?.detail || 'Invalid booking request';
+        setBookingError(detail);
+      } else if (err.response?.data?.detail) {
+        setBookingError(err.response.data.detail);
+      } else {
+        setBookingError('Booking failed. Please try again.');
+      }
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -118,6 +161,11 @@ const BookingPage: React.FC = () => {
             {error}
           </Alert>
         )}
+        {bookingError && (
+          <Alert severity="error" sx={{ mb: 4 }}>
+            {bookingError}
+          </Alert>
+        )}
 
         {bookingSuccess && bookingData && (
           <Paper 
@@ -131,13 +179,35 @@ const BookingPage: React.FC = () => {
             }}
           >
             <Typography variant="h5" component="h2" gutterBottom fontWeight="600">
-              Booking Confirmed!
+              🎉 Booking Confirmed!
             </Typography>
-            <Typography variant="body1" paragraph>
-              Thank you for your booking. Your reservation for {bookingData.passengers.length} passenger(s) has been confirmed.
-            </Typography>
-            <Typography variant="body2">
-              A confirmation email has been sent to {bookingData.contactEmail}. You can also reach us at any time at support@airlineapp.com
+            <Grid container spacing={2} sx={{ mb: 2 }}>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  <strong>Booking Reference:</strong> {bookingData.bookingReference}
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  <strong>Passengers:</strong> {bookingData.passengers.length}
+                </Typography>
+                <Typography variant="body1">
+                  <strong>Selected Seats:</strong> {bookingData.passengers.map(p => p.seat).filter(Boolean).join(', ')}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  <strong>Contact Email:</strong> {bookingData.contactEmail}
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  <strong>Contact Phone:</strong> {bookingData.contactPhone}
+                </Typography>
+                <Typography variant="body1">
+                  <strong>Total Price:</strong> ${flight ? (flight.price * bookingData.passengers.length) : 0}
+                </Typography>
+              </Grid>
+            </Grid>
+            <Typography variant="body2" sx={{ mt: 2, opacity: 0.9 }}>
+              📧 A confirmation email has been sent to {bookingData.contactEmail}. 
+              For any questions, please contact support@airlineapp.com with your booking reference.
             </Typography>
           </Paper>
         )}
@@ -157,7 +227,7 @@ const BookingPage: React.FC = () => {
                 Flight Details
               </Typography>
               <Typography variant="h6" component="div">
-                {flight.origin} → {flight.destination} on {formatDate(flight.departure_time)}
+                {flight.departure_city} → {flight.arrival_city} on {formatDate(flight.departure_time)}
               </Typography>
             </Box>
 
@@ -195,14 +265,14 @@ const BookingPage: React.FC = () => {
                           fontSize: '1.2rem'
                         }}
                       >
-                        {flight.airline.charAt(0)}
+                        {flight.flight_number.charAt(0)}
                       </Box>
                       <Box>
                         <Typography variant="h6" component="div" fontWeight="600">
-                          {flight.airline}
+                          Flight {flight.flight_number}
                         </Typography>
                         <Typography variant="body2">
-                          Flight {flight.flight_number}
+                          {flight.flight_number}
                         </Typography>
                       </Box>
                     </Box>
@@ -225,7 +295,7 @@ const BookingPage: React.FC = () => {
                           {formatTime(flight.departure_time)}
                         </Typography>
                         <Typography variant="body1" fontWeight="500">
-                          {flight.origin}
+                          {flight.departure_city}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
                           {new Date(flight.departure_time).toLocaleDateString()}
@@ -273,7 +343,7 @@ const BookingPage: React.FC = () => {
                           {formatTime(flight.arrival_time)}
                         </Typography>
                         <Typography variant="body1" fontWeight="500">
-                          {flight.destination}
+                          {flight.arrival_city}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
                           {new Date(flight.arrival_time).toLocaleDateString()}
