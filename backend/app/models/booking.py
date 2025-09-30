@@ -10,7 +10,7 @@ class Booking(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     flight_id = Column(Integer, ForeignKey("flights.id"))
     booking_reference = Column(String, unique=True, index=True)
-    seat_number = Column(String)
+    seat_number = Column(String)  # For multi-seat bookings, one row per seat
     booking_status = Column(String)  # confirmed, cancelled, pending
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

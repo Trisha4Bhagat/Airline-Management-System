@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 class BookingBase(BaseModel):
     user_id: int
@@ -10,6 +10,12 @@ class BookingBase(BaseModel):
 
 class BookingCreate(BookingBase):
     pass
+
+class BookingCreateMulti(BaseModel):
+    user_id: int
+    flight_id: int
+    booking_reference: str
+    seat_numbers: List[str]
 
 class BookingUpdate(BaseModel):
     user_id: Optional[int] = None
@@ -22,3 +28,6 @@ class Booking(BookingBase):
 
     class Config:
         from_attributes = True
+
+class BookingMulti(BaseModel):
+    bookings: List[Booking]
