@@ -8,9 +8,11 @@
 
 ## 🔗 **Quick Access & Live Demo**
 
+🎬 **Want to see it in action?** Check out the [Demo Showcase](DEMO_SHOWCASE.md) for a complete walkthrough!
+
 | Resource | URL | Description |
 |----------|-----|-------------|
-| 🎥 **Demo Video** | *Coming Soon - Upload in Progress* | 7-minute project demonstration |
+| 🎥 **Demo Video** | [Demo Showcase](DEMO_SHOWCASE.md) | 7-minute project demonstration |
 | 🚀 **Live Backend** | [http://localhost:8000](http://localhost:8000) | FastAPI server with real flight data |
 | 📚 **Interactive API** | [http://localhost:8000/docs](http://localhost:8000/docs) | Swagger UI for testing endpoints |
 | 🎨 **Frontend App** | [http://localhost:5173](http://localhost:5173) | React application with flight search |
