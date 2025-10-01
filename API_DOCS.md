@@ -10,7 +10,7 @@
 ## 🛩️ **Flight CRUD Operations**
 
 ### **Complete API Overview**
-![Swagger UI Complete Interface - Flight CRUD API Documentation](api-swagger-ui-complete-interface.png)
+![Swagger UI Complete Interface - Flight CRUD API Documentation](media/api-docs/api-swagger-ui-complete-interface.png)
 
 Our Flight Management API provides 5 core operations for complete airline system management:
 
@@ -66,7 +66,7 @@ GET /api/flights/?origin=Sydney&destination=Melbourne&travelers=2
 
 ## 🔍 **2. GET /api/flights/{id} - Get Specific Flight**
 
-![GET Flight by ID - Australian Flight Data TT936](api-get-flight-by-id-response.png) 
+![GET Flight by ID - Australian Flight Data TT936](media/api-docs/api-get-flight-by-id-response.png) 
 
 **Purpose**: Retrieve detailed information for a single flight.
 
@@ -78,7 +78,7 @@ GET /api/flights/1
 ```
 
 **Live Response Example**:
-![GET Flight Response - Gold Coast to Brisbane Route](api-get-flight-by-id-response.png)
+![GET Flight Response - Gold Coast to Brisbane Route](media/api-docs/api-get-flight-by-id-response.png)
 
 The response shows real Australian flight data:
 - **Flight TT936**: Gold Coast → Brisbane
@@ -143,7 +143,7 @@ The response shows real Australian flight data:
 
 ## ✏️ **4. PUT /api/flights/{id} - Update Flight**
 
-![PUT Update Flight - JSON Schema Interface](api-put-update-flight-schema.png)
+![PUT Update Flight - JSON Schema Interface](media/api-docs/api-put-update-flight-schema.png)
 
 **Purpose**: Update existing flight information (Admin only).
 
@@ -185,7 +185,7 @@ The response shows real Australian flight data:
 
 ## 🗑️ **5. DELETE /api/flights/{id} - Remove Flight**
 
-![DELETE Flight Operation - HTTP 204 Success Response](api-delete-flight-success.png)
+![DELETE Flight Operation - HTTP 204 Success Response](media/api-docs/api-delete-flight-success.png)
 
 **Purpose**: Remove flight from the system (Admin only).
 
@@ -212,7 +212,7 @@ Server: uvicorn
 
 ## 📊 **Additional Endpoints**
 
-![API Endpoints Overview - Complete Flight Management System](api-endpoints-overview-complete.png)
+![API Endpoints Overview - Complete Flight Management System](media/api-docs/api-endpoints-overview-complete.png)
 
 ### **Statistics Endpoint**
 ```bash
@@ -228,7 +228,7 @@ GET /api/stats/
 ```
 
 ### **Root Endpoint**
-![Live API Response - Welcome to Airline Message](api-root-welcome-response.png)
+![Live API Response - Welcome to Airline Message](media/api-docs/api-root-welcome-response.png)
 
 ```bash
 GET /

@@ -6,7 +6,6 @@
 - [x] Create initial data models
 - [ ] Implement authentication system
 - [ ] Complete flight CRUD API endpoints
-- [ ] Add booking functionality
 - [ ] Implement user management
 
 ## Frontend Tasks
