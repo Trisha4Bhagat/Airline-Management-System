@@ -105,4 +105,3 @@ You now have a **complete airline management system** with both:
 1. **User Interface**: Flight search and booking
 2. **Admin Interface**: Flight management and control
 
-Perfect for demonstrating full-stack development skills to recruiters! 🚀✈️
