@@ -9,6 +9,11 @@ I created it not only as documentation but also as a showcase of my ability to *
 
 ## 🔗 **Quick Access Links**
 
+## 🎥 **Demo Video**
+For a complete walkthrough of the setup and features, see our [Demo Showcase](DEMO_SHOWCASE.md).
+
+https://drive.google.com/file/d/1vToqWdH86QYYGFES5-XYGH2pV-ryWUsm/view?usp=sharing
+
 | Resource | URL | Description |
 |----------|-----|-------------|
 | 📂 **GitHub Repository** | [Airline-Management-System](https://github.com/Trisha4Bhagat/Airline-Management-System) | Complete source code and documentation |
@@ -16,7 +21,7 @@ I created it not only as documentation but also as a showcase of my ability to *
 | 📚 **Swagger UI** | [http://localhost:8000/docs](http://localhost:8000/docs) | Interactive API documentation |
 | 🎨 **Frontend App** | [http://localhost:5173](http://localhost:5173) | React application with flight search |
 | 🔧 **Admin Panel** | [http://localhost:5173/admin](http://localhost:5173/admin) | Flight management interface |
-| 🎥 **Demo Video** | *Upload in Progress - Coming Soon* | 5-10 minute project walkthrough |
+| 🎥 **Demo Video** | [Demo Showcase](DEMO_SHOWCASE.md) | 5-10 minute project walkthrough |
 | 📋 **Admin Guide** | [ADMIN_PANEL_GUIDE.md](./ADMIN_PANEL_GUIDE.md) | Complete admin functionality documentation |
 
 ---
@@ -365,6 +370,8 @@ This journey has motivated me to keep building scalable projects, and I am excit
 | [AI_ASSISTANT_LOG.md](./AI_ASSISTANT_LOG.md) | Development journey documentation | Technical leaders, educators |
 | [AI_EFFECTIVENESS_REPORT.md](./AI_EFFECTIVENESS_REPORT.md) | AI-assisted development analysis | Recruiters, technical managers |
 
+DEMO VIDEO
+https://drive.google.com/file/d/1vToqWdH86QYYGFES5-XYGH2pV-ryWUsm/view?usp=sharing
 ---
 
 *This deployment guide represents not just technical documentation, but evidence of systematic learning, professional development practices, and the ability to create maintainable solutions that others can easily deploy and extend.*
