@@ -1,6 +1,351 @@
-# Troubleshooting Log
+# 🛠️ Troubleshooting Log - Airline Management System
 
-This log documents my journey through challenging technical issues I encountered while developing the Airline Management System. It captures the problems I faced, how I diagnosed them, and the solutions I implemented.
+**Author**: Trisha Bhagat (Third-year Computer Science Student)  
+**Project**: Airline Management System Modernization  
+**Period**: Week 1 - Flight CRUD Implementation  
+**Tech Stack**: FastAPI, React, PostgreSQL, Docker
+
+---
+
+## 📚 **Week 1 Learning Journey Overview**
+
+This log documents my real experiences learning FastAPI and React for the first time during Week 1 of the Airline Management System project. As a third-year Computer Science student, this was my first deep dive into modern full-stack development, and I wanted to capture both the challenges and breakthroughs that shaped my learning.
+
+**Key Learning Areas**:
+- Setting up development environment from scratch
+- Understanding FastAPI backend architecture  
+- Learning React with TypeScript integration
+- Database connection and management with PostgreSQL
+- API integration between frontend and backend
+- Debugging CORS and environment configuration issues
+
+---
+
+## 🚀 **Major Issue #1: Virtual Environment Setup Struggles**
+**Date**: September 25, 2025  
+**Session**: Project Setup and Planning  
+**Difficulty**: ⭐⭐⭐
+
+### **What Went Wrong**
+As someone coming from basic Python coursework, I'd never properly set up a production-like development environment. I initially tried to install FastAPI globally and couldn't understand why package versions were conflicting with my other projects.
+
+```bash
+# My naive first attempt
+pip install fastapi uvicorn sqlalchemy
+# Error: Package conflicts with existing installations
+```
+
+### **The Learning Process**
+I spent about 2 hours researching virtual environments, reading documentation, and watching tutorials. The concept of isolated Python environments was new to me, and I was nervous about messing up my system Python installation.
+
+### **How I Fixed It**
+Step by step, with some help from AI and online resources:
+
+```bash
+# Create virtual environment
+python -m venv .venv
+
+# Activate (Windows) - took me several tries to get this right
+.\.venv\Scripts\activate
+
+# Install requirements
+pip install -r requirements.txt
+```
+
+### **What I Learned**
+- **Virtual environments are essential** for Python development
+- **Environment isolation prevents conflicts** between projects
+- **Documentation reading skills improved** significantly
+- **Asking for help when stuck is okay** - this boosted my confidence
+
+### **Personal Reflection**
+This was my first real "aha!" moment. Once I understood virtual environments, everything clicked. I felt like I'd leveled up from student coding to actual software development practices.
+
+---
+
+## 🔗 **Major Issue #2: React Build Issues and API Integration**
+**Date**: September 28, 2025  
+**Session**: Flight Search Implementation  
+**Difficulty**: ⭐⭐⭐⭐
+
+### **What Went Wrong**
+Coming from basic HTML/CSS/JavaScript coursework, React was completely overwhelming. I couldn't understand why my API calls weren't working, and the build kept failing with TypeScript errors I'd never seen before.
+
+```typescript
+// My broken first attempt
+const [flights, setFlights] = useState(); // No type definition
+const response = fetch('localhost:8000/api/flights'); // Wrong URL format
+setFlights(response); // Not handling promises correctly
+```
+
+**Error Messages**:
+```
+Type 'undefined' is not assignable to type 'Flight[]'
+TypeError: Failed to fetch
+CORS policy: Request has been blocked
+```
+
+### **The Learning Process**
+This was honestly the most frustrating part of Week 1. I spent an entire afternoon just trying to make one API call work. I had to learn:
+- TypeScript type definitions
+- React hooks and state management
+- Async/await and Promise handling
+- Proper API URL formatting
+
+### **How I Fixed It (with AI help)**
+GitHub Copilot suggested better patterns, but I had to understand and modify them:
+
+```typescript
+// AI-suggested pattern that I learned from and customized
+const [flights, setFlights] = useState<Flight[]>([]);
+const [loading, setLoading] = useState(false);
+
+const fetchFlights = async () => {
+  try {
+    setLoading(true);
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/flights/`);
+    const data = await response.json();
+    setFlights(data);
+  } catch (error) {
+    console.error('Flight fetch failed:', error);
+  } finally {
+    setLoading(false);
+  }
+};
+```
+
+### **What I Learned**
+- **TypeScript makes development more predictable** once you understand it
+- **React state management patterns** are crucial for user experience
+- **Environment variables** keep configuration flexible
+- **AI suggestions need human understanding** - I couldn't just copy-paste
+
+### **Personal Reflection**
+This was my biggest growth moment. I went from feeling completely lost with React to actually enjoying the component-based architecture. The satisfaction of finally seeing real flight data populate in my UI was incredible.
+
+---
+
+## 🗄️ **Major Issue #3: PostgreSQL Database Connection Problems**
+**Date**: September 28, 2025  
+**Session**: Database Migration from SQLite to PostgreSQL  
+**Difficulty**: ⭐⭐⭐⭐⭐
+
+### **What Went Wrong**
+I'd only worked with SQLite in coursework, so PostgreSQL was intimidating. The connection kept failing, and I couldn't tell if it was my configuration, the database setup, or the Python code.
+
+```python
+# My problematic first attempt
+DATABASE_URL = "postgresql://user:password@localhost/airline_db"
+# Error: database "airline_db" does not exist
+# Error: role "user" does not exist
+```
+
+**Error Messages**:
+```
+sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) FATAL: database "airline_db" does not exist
+FATAL: role "airline_user" does not exist
+```
+
+### **The Learning Process**
+I had to learn PostgreSQL administration from scratch:
+- Creating databases and users
+- Understanding connection strings
+- Setting up proper permissions
+- Configuring environment variables
+
+This took me almost 3 hours of trial and error, reading PostgreSQL documentation, and testing different configurations.
+
+### **How I Fixed It**
+Step-by-step PostgreSQL setup (learned the hard way):
+
+```sql
+-- Connect to PostgreSQL as superuser
+CREATE DATABASE airline_db;
+CREATE USER airline_user WITH PASSWORD 'postgres123';
+GRANT ALL PRIVILEGES ON DATABASE airline_db TO airline_user;
+```
+
+```python
+# Correct configuration in Python
+DATABASE_URL = "postgresql://airline_user:postgres123@localhost:5432/airline_db"
+```
+
+### **What I Learned**
+- **Database administration is a skill in itself** - respect for DBAs increased
+- **Connection strings have specific formats** that must be followed exactly
+- **Environment variables keep credentials secure**
+- **Testing database connections separately** helps isolate issues
+
+### **Personal Reflection**
+This was the hardest technical challenge of Week 1. I felt completely out of my depth with database administration. But pushing through taught me that **complex systems have many moving parts**, and systematic debugging is essential.
+
+---
+
+## 🌐 **Major Issue #4: CORS Configuration Between Frontend and Backend**
+**Date**: September 28-29, 2025  
+**Session**: Frontend-Backend Integration  
+**Difficulty**: ⭐⭐⭐
+
+### **What Went Wrong**
+When I finally got both servers running, my frontend couldn't talk to my backend due to CORS (Cross-Origin Resource Sharing) restrictions. I'd never encountered this concept before.
+
+```javascript
+// Error in browser console
+Access to fetch at 'http://localhost:8000/api/flights/' from origin 'http://localhost:5173' 
+has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present
+```
+
+### **The Learning Process**
+I had to understand web security concepts that weren't covered in my coursework:
+- What CORS is and why it exists
+- How browsers enforce security policies
+- Server-side configuration for allowing cross-origin requests
+
+### **How I Fixed It**
+Added CORS middleware to FastAPI (with AI guidance):
+
+```python
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # Frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+```
+
+### **What I Learned**
+- **Web security is complex** but important to understand
+- **Development vs production configurations** are different
+- **Browser developer tools** are essential for debugging
+- **Full-stack development requires understanding both sides**
+
+### **Personal Reflection**
+CORS was frustrating because the error seemed unrelated to my code. Learning that **browsers have built-in security features** was enlightening and made me appreciate the complexity of web development.
+
+---
+
+## 📱 **Issue #5: Environment Variable Management**
+**Date**: September 30, 2025  
+**Session**: Frontend CSS and Configuration  
+**Difficulty**: ⭐⭐
+
+### **What Went Wrong**
+Hard-coding API URLs and configuration values made my code fragile and difficult to deploy. I didn't understand how to properly manage environment-specific settings.
+
+```typescript
+// My problematic approach
+const API_URL = "http://localhost:8000"; // Hard-coded URL
+```
+
+### **How I Fixed It**
+Created proper environment variable setup:
+
+```bash
+# Frontend .env
+REACT_APP_API_URL=http://localhost:8000
+
+# Backend .env  
+DATABASE_URL=postgresql://airline_user:postgres123@localhost:5432/airline_db
+SECRET_KEY=dev_secret_key
+```
+
+### **What I Learned**
+- **Configuration management** is crucial for maintainable applications
+- **Environment variables** provide flexibility across deployments
+- **Security considerations** for production vs development
+
+---
+
+## 🎯 **Issue #6: Understanding API Endpoint Design**
+**Date**: October 1, 2025  
+**Session**: Advanced Search Implementation  
+**Difficulty**: ⭐⭐⭐
+
+### **What Went Wrong**
+I was confused about RESTful API design principles and couldn't decide how to structure my endpoints for complex queries.
+
+### **How I Fixed It**
+Learned RESTful patterns and implemented clean endpoint structure:
+
+```python
+# Clean, RESTful endpoint design
+@router.get("/", response_model=List[FlightResponse])
+async def get_flights(
+    departure_city: Optional[str] = None,
+    arrival_city: Optional[str] = None,
+    departure_date: Optional[str] = None
+):
+```
+
+### **What I Learned**
+- **REST principles** create predictable, maintainable APIs
+- **Query parameters** vs **path parameters** serve different purposes
+- **API design affects frontend development** significantly
+
+---
+
+## 🔧 **Issue #7: Docker Configuration Confusion**
+**Date**: Week 1 (Ongoing)  
+**Difficulty**: ⭐⭐⭐⭐
+
+### **What Went Wrong**
+Docker was completely new to me, and I struggled with containerization concepts, networking between containers, and volume mounting.
+
+### **The Learning Process**
+This is still ongoing, but I've made progress understanding:
+- Container isolation and networking
+- Docker Compose for multi-service applications
+- Volume mounting for development
+
+### **What I Learned So Far**
+- **Containerization** solves deployment consistency problems
+- **Docker Compose** simplifies multi-service development
+- **Container networking** requires understanding of ports and hostnames
+
+---
+
+## 📈 **Overall Week 1 Technical Growth**
+
+### **Skills Developed**
+1. **Full-stack development mindset** - understanding how frontend and backend connect
+2. **Environment setup and configuration** - from beginner confusion to confident setup
+3. **Debugging systematically** - breaking down complex problems into smaller parts
+4. **Reading documentation effectively** - learning to find answers independently
+5. **Working with AI assistance** - using Copilot as a learning tool, not a crutch
+
+### **Confidence Builders**
+- Successfully implementing complete Flight CRUD functionality
+- Seeing real data flow from database → API → frontend
+- Solving problems independently after initial struggle
+- Building something that actually works and looks professional
+
+### **Areas for Continued Learning**
+- Advanced React patterns and state management
+- Database optimization and query performance
+- Production deployment and DevOps practices
+- Security best practices for web applications
+- Testing strategies for full-stack applications
+
+---
+
+## 🎉 **Personal Reflection on Week 1**
+
+This week was an emotional rollercoaster. I started feeling nervous about learning two major technologies (FastAPI and React) simultaneously, but ending the week with a working flight search system gave me incredible confidence.
+
+**The most rewarding moment** was when I could search for "Sydney to Melbourne" flights and see real Australian airlines and pricing data populate in a beautiful React interface. That moment made all the debugging and documentation reading worth it.
+
+**The most challenging aspect** was realizing how many concepts I needed to learn simultaneously - not just the frameworks, but development practices, database administration, environment management, and API design.
+
+**My biggest takeaway** is that modern software development is complex, but breaking problems down systematically and leveraging both AI assistance and traditional learning resources makes even intimidating technologies approachable.
+
+I'm genuinely excited to continue building on this foundation and adding features like user authentication, booking management, and advanced analytics. Week 1 gave me the confidence that I can tackle complex technical challenges and build production-quality software.
+
+---
+
+*This troubleshooting log will continue to grow as I encounter new challenges and learning opportunities in subsequent weeks of the project.*
 
 ## Session 5: September 27, 2025 - UPDATE
 
@@ -190,7 +535,7 @@ Mysterious "no such table" errors intermittently appearing
 This was by far the most frustrating and educational session yet. What started as a simple "why aren't my flights showing?" turned into a 6-hour deep dive into database configuration hell. I thought my API was broken, but it turned out I had a much more fundamental problem - I was running two different databases simultaneously without realizing it!
 
 #### The Discovery That Changed Everything
-![Database Configuration Discovery](session4-database-config.jpg)
+![Database Configuration Discovery](media/ai-assistant-log/session4-database-config.jpg)
 
 When I ran my diagnostic scripts, I discovered the shocking truth:
 - My application was configured for PostgreSQL in the .env file
@@ -241,7 +586,7 @@ Base.metadata.create_all(bind=engine)
 ```
 
 #### Verification Success
-![PostgreSQL Success Confirmation](session4-postgresql-success.jpg)
+![PostgreSQL Success Confirmation](media/ai-assistant-log/session4-postgresql-success.jpg)
 
 After the fix, my diagnostic script finally showed what I wanted to see:
 - ✅ **Database Version:** PostgreSQL 17.6 on x86_64-windows
@@ -407,3 +752,205 @@ After applying my fix:
 While this issue was frustrating, I'm proud of how I persevered through it. As someone new to this , debugging binary file encoding issues was definitely outside my comfort zone. This experience taught me valuable lessons about how files are encoded and how to use Python for file manipulation tasks.
 
 The satisfaction of seeing the server finally start up correctly after hours of debugging was incredible. It reinforced my belief that with persistence, I can overcome technical challenges even when working with unfamiliar technologies.
+
+---
+
+## Session 6: September 28, 2025 - Database Analysis and Flight Data Population
+
+### Issue: Understanding Database Structure and Real Flight Data Integration
+
+![Database Analysis Results](media/ai-assistant-log/session6-database-analysis.png)
+
+#### My Experience
+After resolving the database configuration issues, I needed to understand what data I actually had and how to work with it effectively. This session was about learning database administration and ensuring I had meaningful test data for development.
+
+#### What I Discovered
+When I ran comprehensive database analysis scripts, I found:
+
+**Database Structure Analysis**:
+```sql
+✅ Database Version: PostgreSQL 17.6 on x86_64-windows  
+✅ Database Name: airline_db
+✅ User: airline_user with proper permissions
+✅ Connection: Successful and stable
+✅ Tables: Properly created and accessible
+
+📊 CURRENT DATA:
+🔄 Users: 0
+✈️ Flights: 2554 rows
+📋 Bookings: 0
+```
+
+**Flight Data Analysis**:
+- **Two Routes**: Top routes with 104 flights each
+- **Alice Springs → Adelaide**: 109 flights, Average $305
+- **Sydney → Perth**: 104 flights, Average $462
+- **Adelaide → Melbourne**: 102 flights, Average $160
+- **Adelaide → Sydney**: 100 flights, Average $216
+- **Brisbane → Sydney**: 99 flights, Average $178
+
+**Airlines Distribution**:
+- **QF (Qantas)**: 449 flights
+- **ZL (Rex Airlines)**: 646 flights  
+- **VA (Virgin Australia)**: 433 flights
+- **JQ (Jetstar)**: 409 flights
+- **TT (Tigerair)**: 398 flights
+
+#### Solution I Implemented
+I created comprehensive database analysis scripts that helped me understand:
+
+1. **Data Quality**: Verified all 2,554 flight records were properly formatted
+2. **Route Coverage**: Ensured good distribution across Australian cities
+3. **Price Ranges**: Confirmed realistic pricing from $56 to $675 AUD
+4. **Airline Representation**: Balanced mix of major Australian carriers
+
+#### Key Scripts Created
+```python
+# Database status verification
+def check_database_status():
+    # Verify connection, table existence, record counts
+    
+# Flight data analysis  
+def analyze_flight_data():
+    # Route analysis, pricing analysis, airline distribution
+    
+# Data validation
+def validate_data_integrity():
+    # Check for duplicates, null values, data consistency
+```
+
+#### Personal Reflection
+This session taught me the importance of **data-driven development**. Instead of working with placeholder data, having 2,500+ real Australian flight records made development much more meaningful. I learned to:
+
+- **Verify data quality before building features**
+- **Understand the business domain** (Australian aviation market)
+- **Create analysis tools** for ongoing development
+- **Build with real-world constraints** in mind
+
+---
+
+## Session 7: September 29, 2025 - Frontend-Backend Integration Deep Dive
+
+### Issue: CORS Configuration and API Integration Challenges
+
+![Frontend Development Session](media/ai-assistant-log/session7-frontend-integration.png)
+
+#### My Experience
+This was my first real experience connecting a React frontend to a FastAPI backend. The concepts of cross-origin requests, API integration, and state management were all new to me, leading to several hours of learning and debugging.
+
+#### Initial Problems
+```javascript
+// Error in browser console
+Access to fetch at 'http://localhost:8000/api/flights/' from origin 'http://localhost:5173' 
+has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present 
+on the requested resource.
+```
+
+#### The Learning Process
+I had to understand several concepts simultaneously:
+
+**1. CORS (Cross-Origin Resource Sharing)**
+- Why browsers block cross-origin requests
+- How to configure FastAPI to allow frontend access
+- The difference between development and production CORS settings
+
+**2. React State Management**
+```javascript
+// My first attempt (problematic)
+const fetchFlights = () => {
+  fetch('/api/flights/')  // Wrong - no full URL
+    .then(response => response.json())
+    .then(data => setFlights(data));  // No error handling
+};
+
+// Improved implementation after learning
+const fetchFlights = async () => {
+  try {
+    setLoading(true);
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/flights/`);
+    if (!response.ok) throw new Error('Flight fetch failed');
+    const data = await response.json();
+    setFlights(data);
+  } catch (error) {
+    setError(error.message);
+  } finally {
+    setLoading(false);
+  }
+};
+```
+
+**3. Environment Variables in React**
+- Understanding how `REACT_APP_` prefix works
+- Managing different URLs for development vs production
+- Keeping sensitive configuration separate from code
+
+#### Solution I Implemented
+
+**Backend CORS Configuration**:
+```python
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # React dev server
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+```
+
+**Frontend API Integration**:
+```javascript
+// Created a proper service layer
+class FlightService {
+  constructor() {
+    this.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+  }
+
+  async getFlights(filters = {}) {
+    const params = new URLSearchParams(filters);
+    const response = await fetch(`${this.baseURL}/api/flights/?${params}`);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    return response.json();
+  }
+}
+```
+
+#### Personal Reflection
+This session was a breakthrough in understanding how modern web applications work. I finally grasped:
+
+- **The separation between frontend and backend** as independent services
+- **How APIs serve as contracts** between different parts of the system  
+- **Why error handling is crucial** in network communications
+- **The importance of environment configuration** for deployment flexibility
+
+The moment I saw my React frontend successfully displaying real flight data from my PostgreSQL database was magical - it felt like I'd built a real web application!
+
+---
+
+## 🎯 **Overall Learning Reflection**
+
+### **Key Skills Developed**
+1. **Systematic debugging** - learning to isolate issues layer by layer
+2. **Environment management** - virtual environments, configuration files, environment variables
+3. **Database administration** - PostgreSQL setup, data analysis, connection management
+4. **Full-stack integration** - connecting React frontend to FastAPI backend
+5. **Working with AI assistance** - using Copilot as a learning tool, not a crutch
+
+### **Most Valuable Lessons**
+- **Break complex problems into smaller pieces** - don't try to solve everything at once
+- **Verify your assumptions** - configuration issues can hide as application bugs
+- **Document your learning** - these logs helped me learn from mistakes and track progress
+- **Persistence through frustration** - the most challenging sessions taught me the most
+- **Real data makes development meaningful** - working with 2,500+ flight records vs placeholder data
+
+### **Tools and Techniques That Became Essential**
+- **Diagnostic scripts** for verifying system state
+- **Environment variable management** for flexible configuration
+- **Layer-by-layer testing** (database → service → API → frontend)
+- **Error handling patterns** throughout the application stack
+- **Documentation as you go** for future reference and learning
+
+**My biggest takeaway** is that modern software development is complex, but breaking problems down systematically and leveraging both AI assistance and traditional learning resources makes even intimidating technologies approachable.
+
+This project transformed my confidence as a developer. I went from feeling overwhelmed by full-stack development to genuinely enjoying the process of building functional, real-world applications.
