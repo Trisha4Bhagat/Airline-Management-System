@@ -1,0 +1,56 @@
+# ✈️ Airline Management System - Requirements
+# Backend Dependencies (FastAPI + PostgreSQL)
+
+# Core FastAPI Framework
+fastapi>=0.100.0
+uvicorn[standard]>=0.20.0
+
+# Database
+sqlalchemy>=1.4.0
+psycopg2-binary>=2.9.1
+alembic>=1.7.7
+
+# Data Validation & Serialization
+pydantic>=2.0.0
+
+# Environment & Configuration
+python-dotenv>=0.19.0
+
+# Authentication & Security (for future features)
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+
+# HTTP Client (for testing and external API calls)
+httpx>=0.24.0
+
+# Development & Testing
+pytest>=7.0.0
+pytest-asyncio>=0.21.0
+
+# CORS Middleware (already included in FastAPI but explicit for clarity)
+# fastapi includes starlette which has CORS middleware
+
+# Additional Utilities
+python-multipart>=0.0.6  # For form data handling
+jinja2>=3.1.0           # Template engine (if needed for future features)
+
+# Frontend Dependencies Note:
+# Frontend (React + TypeScript) dependencies are managed separately via npm
+# See frontend/package.json for Node.js dependencies:
+# - React 18+
+# - TypeScript 5+
+# - Material-UI (MUI)
+# - Vite (build tool)
+# - Axios (HTTP client)
+
+# System Requirements:
+# - Python 3.10+
+# - Node.js 18+
+# - PostgreSQL 17+
+# - Git
+
+# Installation Instructions:
+# 1. Backend: pip install -r requirements.txt
+# 2. Frontend: cd frontend && npm install
+# 3. Database: Set up PostgreSQL and configure .env file
+# 4. Run: Use start_all.bat (Windows) or follow DEPLOYMENT_GUIDE.md
