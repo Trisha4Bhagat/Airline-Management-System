@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Flight } from '../types/Flight';
-import BookingForm, { PassengerDetail } from '../components/flights/BookingForm';
+import { Flight } from '../../types/Flight';
+import BookingForm, { PassengerDetail } from './BookingForm';
 import './BookingConfirmation.css';
 
 interface BookingConfirmationProps {

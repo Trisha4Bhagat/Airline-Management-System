@@ -24,18 +24,20 @@ import {
   Person as ProfileIcon,
   Logout as LogoutIcon
 } from '@mui/icons-material';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 
 const drawerWidth = 240;
 
 interface DashboardLayoutProps {
   window?: () => Window;
+  children: React.ReactNode;
 }
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
   const { window } = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -89,8 +91,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
           <ListItem key={item.text} disablePadding>
             <ListItemButton 
               onClick={() => handleNavigation(item.path)}
-              className={window.location.pathname === item.path ? 'active' : ''}
-            >
+                  className={location.pathname === item.path ? 'active' : ''}            >
               <ListItemIcon>
                 {item.icon}
               </ListItemIcon>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Flight } from '../types/Flight';
+import { Flight } from '../../types/Flight';
 
 interface BookingFormProps {
   flight: Flight | null;
