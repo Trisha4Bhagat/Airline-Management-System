@@ -30,7 +30,7 @@ const drawerWidth = 240;
 
 interface DashboardLayoutProps {
   window?: () => Window;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
@@ -114,7 +114,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
     </div>
   );
 
-  const container = window !== undefined ? () => window().document.body : undefined;
+  const container = window !== undefined ? () => window()?.document?.body : undefined;
 
   return (
     <Box sx={{ display: 'flex' }}>

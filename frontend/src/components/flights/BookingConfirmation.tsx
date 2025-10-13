@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Flight } from '../../types/Flight';
-import BookingForm, { PassengerDetail } from './BookingForm';
+import BookingForm, { BookingFormData, PassengerData } from './BookingForm';
 import './BookingConfirmation.css';
 
 interface BookingConfirmationProps {
   flight: Flight;
-  passengers: PassengerDetail[];
+  passengers: PassengerData[];
+  contactEmail: string;
   onClose: () => void;
   onBackToFlights: () => void;
 }
@@ -13,6 +14,7 @@ interface BookingConfirmationProps {
 const BookingConfirmation: React.FC<BookingConfirmationProps> = ({ 
   flight, 
   passengers, 
+  contactEmail,
   onClose, 
   onBackToFlights 
 }) => {
@@ -48,7 +50,7 @@ const BookingConfirmation: React.FC<BookingConfirmationProps> = ({
   const handleSendEmail = () => {
     setIsEmailSent(true);
     setTimeout(() => {
-      alert(`Confirmation email sent to ${passengers[0].email}`);
+      alert(`Confirmation email sent to ${contactEmail}`);
     }, 1000);
   };
   
@@ -127,7 +129,7 @@ const BookingConfirmation: React.FC<BookingConfirmationProps> = ({
         
         <div className="confirmation-message">
           <p>
-            Thank you for booking with SkyAirlines! A confirmation email has been sent to <strong>{passengers[0].email}</strong>.
+            Thank you for booking with SkyAirlines! A confirmation email has been sent to <strong>{contactEmail}</strong>.
             Please keep your booking reference for future inquiries.
           </p>
           {!isEmailSent && (

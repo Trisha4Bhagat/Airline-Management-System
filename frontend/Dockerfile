@@ -1,20 +1,27 @@
-FROM node:18-slim
+FROM node:18-alpine
 
 WORKDIR /app
 
+# Copy package files
 COPY package*.json ./
-RUN npm install
 
+# Install dependencies
+RUN npm ci --only=production
+
+# Copy source code
 COPY . .
 
-# Build the app for production
+# Set environment variable for production build
+ENV NODE_ENV=production
+
+# Build the application
 RUN npm run build
 
-# Install serve to run the application
+# Install serve to serve static files
 RUN npm install -g serve
 
-# Expose the port the app will run on
-EXPOSE 5173
+# Expose port
+EXPOSE 3000
 
-# Command to run the app
-CMD ["serve", "-s", "dist", "-l", "5173"]
+# Serve the built application
+CMD ["serve", "-s", "dist", "-l", "3000"]

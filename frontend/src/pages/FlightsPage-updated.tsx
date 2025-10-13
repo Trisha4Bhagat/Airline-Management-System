@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Flight } from '../types/Flight';
 import { searchFlights } from '../services/flightService';
 import FlightCardSimple from '../components/flights/FlightCardSimple';
-import BookingForm, { PassengerDetail } from '../components/flights/BookingForm';
+import BookingForm, { BookingFormData, PassengerData } from '../components/flights/BookingForm';
 import BookingConfirmation from '../components/flights/BookingConfirmation';
 import DashboardLayout from '../components/common/DashboardLayout';
 import '../components/flights/BookingForm.css';
@@ -18,7 +18,8 @@ const FlightsPage: React.FC = () => {
   const [selectedFlight, setSelectedFlight] = useState<Flight | null>(null);
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [bookingPassengers, setBookingPassengers] = useState<PassengerDetail[]>([]);
+  const [bookingPassengers, setBookingPassengers] = useState<PassengerData[]>([]);
+  const [contactEmail, setContactEmail] = useState('');
 
   // Available cities for the dropdown (in a real app, this would come from an API)
   const cities = ['New York', 'London', 'Paris', 'Tokyo', 'Sydney', 'Dubai', 'Rome', 'Beijing', 'Mumbai'];
@@ -59,15 +60,16 @@ const FlightsPage: React.FC = () => {
     }
   };
 
-  const handleBookingSubmit = (passengers: PassengerDetail[]) => {
+  const handleBookingSubmit = (bookingData: BookingFormData) => {
     // In a real app, this would send the booking to the API
     console.log('Booking submitted:', {
       flight: selectedFlight,
-      passengers
+      bookingData
     });
     
-    // Store the passengers for the confirmation page
-    setBookingPassengers(passengers);
+    // Store the passengers and contact info for the confirmation page
+    setBookingPassengers(bookingData.passengers);
+    setContactEmail(bookingData.contactEmail);
     
     // Close booking form and show confirmation
     setShowBookingForm(false);
@@ -83,12 +85,14 @@ const FlightsPage: React.FC = () => {
     setShowConfirmation(false);
     setSelectedFlight(null);
     setBookingPassengers([]);
+    setContactEmail('');
   };
 
   const handleBackToFlights = () => {
     setShowConfirmation(false);
     setSelectedFlight(null);
     setBookingPassengers([]);
+    setContactEmail('');
   };
 
   return (
@@ -202,6 +206,7 @@ const FlightsPage: React.FC = () => {
         <BookingConfirmation
           flight={selectedFlight}
           passengers={bookingPassengers}
+          contactEmail={contactEmail}
           onClose={handleCloseConfirmation}
           onBackToFlights={handleBackToFlights}
         />
