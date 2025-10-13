@@ -24,4 +24,8 @@ app.include_router(booking.router, prefix="/bookings", tags=["bookings"])
 
 @app.get("/")
 async def root():
-    return {"message": "Welcome to Airline"}
+    return {"message": "Welcome to Airline Management System API"}
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "service": "airline-backend"}

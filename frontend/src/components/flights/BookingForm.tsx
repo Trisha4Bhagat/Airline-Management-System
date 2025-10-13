@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
-import { Flight } from '../types/Flight';
+import { Flight } from '../../types/Flight';
 
-interface BookingFormProps {
-  flight: Flight | null;
-  onClose: () => void;
-  onSubmit: (passengerDetails: PassengerDetail[]) => void;
+export interface PassengerData {
+  firstName: string;
+  lastName: string;
+  age: number;
+  gender: string;
+  seat?: string;
+  mealPreference: string;
+  seatPreference: string;
 }
 
 export interface PassengerDetail {
@@ -14,11 +18,26 @@ export interface PassengerDetail {
   phone: string;
   dateOfBirth: string;
   passportNumber: string;
-  specialRequests?: string;
+  specialRequests: string;
+}
+
+export interface BookingFormData {
+  contactEmail: string;
+  contactPhone: string;
+  passengers: PassengerData[];
+  bookingReference?: string;
+}
+
+interface BookingFormProps {
+  flight: Flight | null;
+  onClose: () => void;
+  onSubmit: (data: BookingFormData) => void;
 }
 
 const BookingForm: React.FC<BookingFormProps> = ({ flight, onClose, onSubmit }) => {
   const [passengerCount, setPassengerCount] = useState(1);
+  const [contactEmail, setContactEmail] = useState('');
+  const [contactPhone, setContactPhone] = useState('');
   const [passengers, setPassengers] = useState<PassengerDetail[]>([
     {
       firstName: '',
@@ -77,6 +96,17 @@ const BookingForm: React.FC<BookingFormProps> = ({ flight, onClose, onSubmit }) 
   const validateForm = (): boolean => {
     const errors: { [key: string]: string } = {};
     
+    // Validate contact information
+    if (!contactEmail.trim()) {
+      errors['contactEmail'] = 'Contact email is required';
+    } else if (!/\S+@\S+\.\S+/.test(contactEmail)) {
+      errors['contactEmail'] = 'Contact email is invalid';
+    }
+    
+    if (!contactPhone.trim()) {
+      errors['contactPhone'] = 'Contact phone is required';
+    }
+    
     passengers.forEach((passenger, index) => {
       if (!passenger.firstName.trim()) {
         errors[`passenger${index}-firstName`] = 'First name is required';
@@ -117,7 +147,23 @@ const BookingForm: React.FC<BookingFormProps> = ({ flight, onClose, onSubmit }) 
     e.preventDefault();
     
     if (validateForm()) {
-      onSubmit(passengers);
+      // Convert PassengerDetail[] to PassengerData[] and create BookingFormData
+      const passengerData: PassengerData[] = passengers.map(passenger => ({
+        firstName: passenger.firstName,
+        lastName: passenger.lastName,
+        age: new Date().getFullYear() - new Date(passenger.dateOfBirth).getFullYear(),
+        gender: '', // Default value, could be added to form
+        mealPreference: 'standard', // Default value
+        seatPreference: 'any' // Default value
+      }));
+
+      const bookingData: BookingFormData = {
+        contactEmail,
+        contactPhone,
+        passengers: passengerData
+      };
+
+      onSubmit(bookingData);
     }
   };
 
@@ -180,6 +226,41 @@ const BookingForm: React.FC<BookingFormProps> = ({ flight, onClose, onSubmit }) 
         </div>
         
         <form onSubmit={handleSubmit} className="booking-form">
+          <div className="contact-section">
+            <h3>Contact Information</h3>
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="contactEmail">Contact Email:</label>
+                <input
+                  id="contactEmail"
+                  type="email"
+                  value={contactEmail}
+                  onChange={(e) => setContactEmail(e.target.value)}
+                  className={formErrors['contactEmail'] ? 'form-control error' : 'form-control'}
+                  required
+                />
+                {formErrors['contactEmail'] && (
+                  <div className="error-message">{formErrors['contactEmail']}</div>
+                )}
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="contactPhone">Contact Phone:</label>
+                <input
+                  id="contactPhone"
+                  type="tel"
+                  value={contactPhone}
+                  onChange={(e) => setContactPhone(e.target.value)}
+                  className={formErrors['contactPhone'] ? 'form-control error' : 'form-control'}
+                  required
+                />
+                {formErrors['contactPhone'] && (
+                  <div className="error-message">{formErrors['contactPhone']}</div>
+                )}
+              </div>
+            </div>
+          </div>
+
           <div className="form-group">
             <label htmlFor="passengerCount">Number of Passengers:</label>
             <select 

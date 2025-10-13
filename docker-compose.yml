@@ -1,18 +1,16 @@
-version: '3.8'
-
 services:
   db:
-    image: postgres:14
+    image: postgres:15
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
-      POSTGRES_DB: ${POSTGRES_DB:-airline_db}
+      POSTGRES_DB: airline_db
+      POSTGRES_USER: airline_user
+      POSTGRES_PASSWORD: postgres123
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U airline_user -d airline_db"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -21,30 +19,28 @@ services:
     build: 
       context: ./backend
       dockerfile: Dockerfile
-    environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@db:5432/${POSTGRES_DB:-airline_db}
     ports:
       - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://airline_user:postgres123@db:5432/airline_db
+      - SECRET_KEY=your-secret-key-here-change-in-production
     depends_on:
       db:
         condition: service_healthy
-    volumes:
-      - ./backend:/app
-    command: uvicorn app.main:app --host 0.0.0.0 --reload
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "5173:5173"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      - "3000:3000"
     environment:
       - VITE_API_URL=http://localhost:8000
     depends_on:
       - backend
+    volumes:
+      - /app/node_modules
 
 volumes:
   postgres_data:
